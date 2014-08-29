@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  */
 public class SolrLogReader {
   public static Pattern END_DIGITS = Pattern.compile(".*?(\\d+)$", Pattern.DOTALL);
+  public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
 
   public static void main(String[] args) throws IOException {
     if (args.length < 1) {
@@ -94,10 +95,20 @@ public class SolrLogReader {
         Matcher m = END_DIGITS.matcher(file.getName());
         if (m.matches()) {
           f1 = Integer.parseInt(m.group(1));
+        } else {
+          m = DIGITS.matcher(file.getName());
+          while (m.find()) {
+            f1 = Integer.parseInt(m.group(1));
+          }
         }
         Matcher m2 = END_DIGITS.matcher(file2.getName());
         if (m2.matches()) {
           f2 = Integer.parseInt(m2.group(1));
+        } else {
+          m2 = DIGITS.matcher(file2.getName());
+          while (m2.find()) {
+            f2 = Integer.parseInt(m2.group(1));
+          }
         }
         return f2.compareTo(f1);
       }});
