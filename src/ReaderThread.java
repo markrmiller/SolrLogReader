@@ -1,0 +1,183 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.BufferUnderflowException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ReaderThread extends Thread {
+  private List<Aspect> aspects;
+  private File file;
+  private long start;
+  private long end;
+  private long length;
+  private boolean last;
+  private Pattern[] patterns;
+  private Pattern pattern;
+
+  public ReaderThread(File file, long start, long end, long length, boolean endOfFileThread, List<Aspect> aspects, Pattern[] patterns)
+      throws IOException {
+    this.aspects = aspects;
+    this.start = start;
+    this.end = end;
+    // System.out.println("create thread start:" + start + " end:" + end);
+    this.file = file;
+    this.last = endOfFileThread;
+    this.length = length;
+    this.patterns = patterns;
+  }
+  
+  public void run() {
+    RandomAccessFile raf = null;
+    FileChannel channel = null;
+    // System.out.println("map size:" + (end - start) + " start:" + start + " length:" + length);
+    long readEnd = end;
+    if (!last) {
+      // we over read so that we don't miss a line
+      readEnd += 10000;
+      readEnd = Math.min(readEnd, length);
+    }
+    
+    try {
+      raf = new RandomAccessFile(file, "r");
+      channel = raf.getChannel();
+      MappedByteBuffer map = channel.map(
+          FileChannel.MapMode.READ_ONLY, start, readEnd - start);
+
+      if (start > end) {
+        return;
+      }
+      
+      String timestamp = null;
+      String pline = null;
+      boolean foundAtLeastOneTimeStamp = false;
+      while (map.position() < end - start) {
+
+        pline = readLine(map);
+        if (pline == null) {
+          break;
+        }
+        // System.out.println(Thread.currentThread().getId() + " lineis:" + pline);
+        
+        int cnt = 0;
+        do {
+          pattern = patterns[cnt++];
+          Matcher tm = pattern.matcher(pline);
+          if (tm.matches()) {
+            // found start of line
+            foundAtLeastOneTimeStamp = true;
+            timestamp = tm.group(1);
+            break;
+          }
+        } while (cnt < patterns.length);
+
+        if (foundAtLeastOneTimeStamp) {
+          break;
+        }
+      }
+      if (!foundAtLeastOneTimeStamp) {
+        System.out.println("WARNING: no log entries found, could not match on timestamp.");
+      }
+      StringBuilder entry = new StringBuilder();
+
+      do {
+        // System.out.println(Thread.currentThread().getId() +  " readlineis:" + pline);
+
+        // System.out.println("look at line" + cnt++);
+        Matcher tm = pattern.matcher(pline);
+        if (tm.matches()) {
+          if (timestamp != null) {
+            for (Aspect aspect : aspects) {
+              boolean result = aspect.process(timestamp, pline, entry.toString());
+              if (result) {
+                break;
+              }
+            }
+          }
+          timestamp = tm.group(1);
+          entry.setLength(0);
+        } else {
+          // building an entry
+          // System.out.println("building:" + pline);
+          entry.append(pline + "\n");
+        }
+        
+        if (map.position() >= end - start) {
+          // we are done
+          return;
+        }
+        
+      } while ((pline = readLine(map)) != null);
+      
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } finally {
+      try {
+        if (channel != null) {
+          channel.close();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      try {
+        raf.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+  
+  public final String readLine(MappedByteBuffer map) throws IOException {
+    StringBuffer input = new StringBuffer();
+    int c = -1;
+    boolean eol = false;
+    try {
+      while (!eol) {
+        switch (c = map.get()) {
+          case -1:
+          case '\n':
+            eol = true;
+            break;
+          case '\r':
+            eol = true;
+            long cur = map.position();
+            if ((map.get()) != '\n') {
+              map.position((int) cur);
+            }
+            break;
+          default:
+            input.append((char) c);
+            break;
+        }
+      }
+    } catch (BufferUnderflowException e) {
+      return null;
+    }
+    
+    if ((c == -1) && (input.length() == 0)) {
+      return null;
+    }
+    return input.toString();
+  }
+}
