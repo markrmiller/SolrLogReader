@@ -41,6 +41,7 @@ public class SolrLogReader {
     if (args.length < 1) {
       System.out.println("Usage: SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} ...");
       System.out.println("Example: SolrLogReader /solr/logs org.apache.solr.cloud");
+      System.exit(1);
     }
     
     Properties props = new Properties();
