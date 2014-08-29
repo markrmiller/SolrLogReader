@@ -21,6 +21,9 @@ import java.io.RandomAccessFile;
 import java.nio.BufferUnderflowException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,8 +37,10 @@ public class ReaderThread extends Thread {
   private boolean last;
   private Pattern[] patterns;
   private Pattern pattern;
+  private String[] dfPatterns;
+  private int patternIndex;
 
-  public ReaderThread(File file, long start, long end, long length, boolean endOfFileThread, List<Aspect> aspects, Pattern[] patterns)
+  public ReaderThread(File file, long start, long end, long length, boolean endOfFileThread, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns)
       throws IOException {
     this.aspects = aspects;
     this.start = start;
@@ -45,11 +50,13 @@ public class ReaderThread extends Thread {
     this.last = endOfFileThread;
     this.length = length;
     this.patterns = patterns;
+    this.dfPatterns = dfPatterns;
   }
   
   public void run() {
     RandomAccessFile raf = null;
     FileChannel channel = null;
+    boolean parseTimeStamps = true;
     // System.out.println("map size:" + (end - start) + " start:" + start + " length:" + length);
     long readEnd = end;
     if (!last) {
@@ -81,13 +88,17 @@ public class ReaderThread extends Thread {
         
         int cnt = 0;
         do {
+          patternIndex = cnt;
           pattern = patterns[cnt++];
           Matcher tm = pattern.matcher(pline);
+          // System.out.println("Try timestamp pattern: " + pattern + " on line: " + pline);
           if (tm.matches()) {
             // found start of line
             foundAtLeastOneTimeStamp = true;
             timestamp = tm.group(1);
             break;
+          } else {
+            // System.out.println("Failed");
           }
         } while (cnt < patterns.length);
 
@@ -98,23 +109,39 @@ public class ReaderThread extends Thread {
       if (!foundAtLeastOneTimeStamp) {
         System.out.println("WARNING: no log entries found, could not match on timestamp.");
       }
+      // System.out.println("Using timestamp pattern:" + pattern);
       StringBuilder entry = new StringBuilder();
 
       do {
         // System.out.println(Thread.currentThread().getId() +  " readlineis:" + pline);
 
         // System.out.println("look at line" + cnt++);
+        Date dateTs = null;
         Matcher tm = pattern.matcher(pline);
         if (tm.matches()) {
+          timestamp = tm.group(1);
           if (timestamp != null) {
+            String dfString = dfPatterns[patternIndex];
+            // System.out.println("Check df:" + dfString + " for " + patternIndex + " in " + Arrays.asList(dfPatterns));
+            if (parseTimeStamps && dfString != null) {
+              // System.out.println("Found configured Date format pattern: " + dfString);
+              SimpleDateFormat format = new SimpleDateFormat(dfString);
+              try {
+                dateTs = format.parse(timestamp);
+              } catch (ParseException e) {
+                e.printStackTrace();
+                // parsing failed, don't try anymore
+                parseTimeStamps = false;
+              }
+            }
+            
             for (Aspect aspect : aspects) {
-              boolean result = aspect.process(timestamp, pline, entry.toString());
+              boolean result = aspect.process(timestamp, dateTs, pline, entry.toString());
               if (result) {
                 break;
               }
             }
           }
-          timestamp = tm.group(1);
           entry.setLength(0);
         } else {
           // building an entry

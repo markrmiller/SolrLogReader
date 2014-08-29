@@ -53,17 +53,23 @@ public class SolrLogReader {
     }
     
     List<String> tsPatterns = new ArrayList<String>();
+    List<String> dfPatterns = new ArrayList<String>();
     Enumeration<String> keys = (Enumeration<String>) props.propertyNames();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement();
-      if (key.startsWith("timestamp")) {
+      if (key.startsWith("timestamp") && !key.endsWith("-dateformat")) {
         tsPatterns.add(props.getProperty(key));
+        String df = props.getProperty(key + "-dateformat");
+        dfPatterns.add(df);
       }
     }
     
+    System.out.println("Configured timestamp patterns: " + tsPatterns);
+    System.out.println("Configured date format patterns:" +  dfPatterns);
+    
     Pattern[] patterns = new Pattern[tsPatterns.size()];
     for (int i = 0; i < patterns.length; i++) {
-      patterns[i] = Pattern.compile(tsPatterns.get(i));
+      patterns[i] = Pattern.compile(tsPatterns.get(i), Pattern.DOTALL);
     }
     
     for (int i = 1; i < args.length; i++) {
@@ -108,7 +114,7 @@ public class SolrLogReader {
     }
     
     for (File f : files) {
-      processFile(f, aspects, patterns);
+      processFile(f, aspects, patterns, dfPatterns.toArray(new String[0]));
     }
     long timeEnd = new Date().getTime();
     
@@ -121,7 +127,7 @@ public class SolrLogReader {
 
   }
 
-  private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns)
+  private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns)
       throws IOException {
     System.out.println("Processing file: " + file.getName());
     int threads = Runtime.getRuntime().availableProcessors();
@@ -133,7 +139,7 @@ public class SolrLogReader {
     long end = chunkSize;
     List<ReaderThread> threadReaders = new ArrayList<ReaderThread>();
     for (int i = 0; i < threads; i++) {
-      ReaderThread rt = new ReaderThread(file, start, end, length, i == threads - 1, aspects, patterns);
+      ReaderThread rt = new ReaderThread(file, start, end, length, i == threads - 1, aspects, patterns, dfPatterns);
       threadReaders.add(rt);
       rt.start();
       start = start + chunkSize;

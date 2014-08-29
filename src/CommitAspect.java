@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +32,7 @@ public class CommitAspect extends Aspect {
   private AtomicLong openSearcher = new AtomicLong(0);
   
   @Override
-  public boolean process(String timestamp, String headLine, String entry) {
+  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("ts:" + timestamp + " headline:" + headLine + " entry:" + entry);
     if (headLine.contains("start commit{")) {
       commits.incrementAndGet();

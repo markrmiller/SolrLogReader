@@ -1,3 +1,5 @@
+import java.util.Date;
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,8 +20,18 @@
 
 public abstract class Aspect {
   
- public abstract boolean process(String timestamp, String headLine, String entry);
+ /**
+ * @param timestamp raw timestamp string
+ * @param dateTs timestamp in Date form or null if not available
+ * @param headLine the first line of a log entry
+ * @param entry the rest of a log entry
+ * @return true if aspect handled the entry and doesn't think another aspects needs to
+ */
+public abstract boolean process(String timestamp, Date dateTs, String headLine, String entry);
  
- public abstract void printReport();
+ /**
+ * Prints a summary report for the Aspect to standard out.
+ */
+public abstract void printReport();
   
 }

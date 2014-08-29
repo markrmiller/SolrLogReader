@@ -18,6 +18,7 @@
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class TextMatchAspect extends Aspect {
@@ -29,7 +30,7 @@ public class TextMatchAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, String headLine, String entry) {
+  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
     if (headLine.contains(text)){
       texts.add(headLine + (entry != null && entry.length() > 0 ? ":" + entry : ""));
     }

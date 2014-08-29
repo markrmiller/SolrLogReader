@@ -18,6 +18,7 @@
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,7 +68,7 @@ public class ExceptionAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, String headLine, String entry) {
+  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
      //System.out.println("headline:" + headLine);
      //System.out.println("entry:" + entry);
     if (headLine.contains("Exception")) {

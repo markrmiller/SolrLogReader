@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.MinMaxPriorityQueue;
 
 public class QueryAspect extends Aspect {
+  private static final int NUM_SLOWEST_QUERIES = 20;
+
   public static Pattern QUERY = Pattern.compile(
       ".*?q=(.*?)(?:&|}).*?hits=(\\d+).*?QTime=(\\d+).*", Pattern.DOTALL);
   
@@ -46,12 +49,12 @@ public class QueryAspect extends Aspect {
   }
   
   public QueryAspect() {
-    queryQueue = MinMaxPriorityQueue.maximumSize(20)
+    queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES)
         .create();
   }
   
   @Override
-  public boolean process(String timestamp, String headLine, String entry) {
+  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
     Matcher m = QUERY.matcher(headLine);
     if (m.matches()) {
       String query = m.group(1);
@@ -77,6 +80,8 @@ public class QueryAspect extends Aspect {
   public void printReport() {
     System.out.println("Query Report");
     System.out.println("-----------------");
+    
+    System.out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
     Query q;
     while ((q = queryQueue.poll()) != null) {
       System.out.println(q);
