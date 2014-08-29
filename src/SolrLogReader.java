@@ -44,7 +44,12 @@ public class SolrLogReader {
     }
     
     Properties props = new Properties();
-    props.load(new FileInputStream(new File("config.txt")));
+    FileInputStream fis = new FileInputStream(new File("config.txt"));
+    try {
+      props.load(fis);
+    } finally {
+      fis.close();
+    }
     
     List<String> tsPatterns = new ArrayList<String>();
     Enumeration<String> keys = (Enumeration<String>) props.propertyNames();
