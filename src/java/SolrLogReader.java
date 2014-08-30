@@ -55,9 +55,16 @@ public class SolrLogReader {
     
     List<String> tsPatterns = new ArrayList<String>();
     List<String> dfPatterns = new ArrayList<String>();
+    List<String> propKeys = new ArrayList<String>();
     Enumeration<String> keys = (Enumeration<String>) props.propertyNames();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement();
+      propKeys.add(key);
+    }
+    
+    Collections.sort(propKeys, new DigitComparator(END_DIGITS, false));
+    
+    for (String key : propKeys) {
       if (key.startsWith("timestamp") && !key.endsWith("-dateformat")) {
         tsPatterns.add(props.getProperty(key));
         String df = props.getProperty(key + "-dateformat");
@@ -98,32 +105,7 @@ public class SolrLogReader {
     }
     
     final Pattern digitPattern = pattern;
-    Collections.sort(files, new Comparator<File>(){
-
-      @Override
-      public int compare(File file, File file2) {
-        Integer f1 = 0;
-        Integer f2 = 0;
-        Matcher m = digitPattern.matcher(file.getName());
-        if (digitPattern == END_DIGITS && m.matches()) {
-          f1 = Integer.parseInt(m.group(1));
-        } else {
-          m = digitPattern.matcher(file.getName());
-          while (m.find()) {
-            f1 = Integer.parseInt(m.group(1));
-          }
-        }
-        Matcher m2 = digitPattern.matcher(file2.getName());
-        if (digitPattern == END_DIGITS && m2.matches()) {
-          f2 = Integer.parseInt(m2.group(1));
-        } else {
-          m2 = digitPattern.matcher(file2.getName());
-          while (m2.find()) {
-            f2 = Integer.parseInt(m2.group(1));
-          }
-        }
-        return f2.compareTo(f1);
-      }});
+    Collections.sort(files, new DigitComparator(digitPattern, true));
     List<Aspect> aspects = new ArrayList<Aspect>();
     
 
@@ -179,6 +161,48 @@ public class SolrLogReader {
         Thread.interrupted();
         e.printStackTrace();
       }
+    }
+  }
+  
+  private static final class DigitComparator implements Comparator<Object> {
+    private final Pattern digitPattern;
+    private final boolean dec;
+    
+    private DigitComparator(Pattern digitPattern, boolean dec) {
+      this.digitPattern = digitPattern;
+      this.dec = dec;
+    }
+    
+    @Override
+    public int compare(Object obj1, Object obj2) {
+      Integer f1 = 0;
+      Integer f2 = 0;
+      String obj1String = obj1.toString();
+      String obj2String = obj2.toString();
+      Matcher m = digitPattern.matcher(obj1String);
+      if (digitPattern == END_DIGITS && m.matches()) {
+        f1 = Integer.parseInt(m.group(1));
+      } else {
+        m = digitPattern.matcher(obj1String);
+        while (m.find()) {
+          f1 = Integer.parseInt(m.group(1));
+        }
+      }
+      Matcher m2 = digitPattern.matcher(obj2String);
+      if (digitPattern == END_DIGITS && m2.matches()) {
+        f2 = Integer.parseInt(m2.group(1));
+      } else {
+        m2 = digitPattern.matcher(obj2String);
+        while (m2.find()) {
+          f2 = Integer.parseInt(m2.group(1));
+        }
+      }
+      int result = f2.compareTo(f1);
+      
+      if (!dec) {
+        result *= -1;
+      }
+      return result;
     }
   }
 }
