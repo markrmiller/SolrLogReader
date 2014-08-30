@@ -67,6 +67,7 @@ public class SolrLogReader {
     
     System.out.println("Configured timestamp patterns: " + tsPatterns);
     System.out.println("Configured date format patterns:" +  dfPatterns);
+    System.out.println();
     
     Pattern[] patterns = new Pattern[tsPatterns.size()];
     for (int i = 0; i < patterns.length; i++) {
@@ -86,26 +87,37 @@ public class SolrLogReader {
     } else {
       files.add(file);
     }
+    
+    Pattern pattern = DIGITS;
+    for (File f : files) {
+      Matcher m = END_DIGITS.matcher(f.getName());
+      if (m.matches()) {
+        pattern = END_DIGITS;
+        break;
+      }
+    }
+    
+    final Pattern digitPattern = pattern;
     Collections.sort(files, new Comparator<File>(){
 
       @Override
       public int compare(File file, File file2) {
         Integer f1 = 0;
         Integer f2 = 0;
-        Matcher m = END_DIGITS.matcher(file.getName());
-        if (m.matches()) {
+        Matcher m = digitPattern.matcher(file.getName());
+        if (digitPattern == END_DIGITS && m.matches()) {
           f1 = Integer.parseInt(m.group(1));
         } else {
-          m = DIGITS.matcher(file.getName());
+          m = digitPattern.matcher(file.getName());
           while (m.find()) {
             f1 = Integer.parseInt(m.group(1));
           }
         }
-        Matcher m2 = END_DIGITS.matcher(file2.getName());
-        if (m2.matches()) {
+        Matcher m2 = digitPattern.matcher(file2.getName());
+        if (digitPattern == END_DIGITS && m2.matches()) {
           f2 = Integer.parseInt(m2.group(1));
         } else {
-          m2 = DIGITS.matcher(file2.getName());
+          m2 = digitPattern.matcher(file2.getName());
           while (m2.find()) {
             f2 = Integer.parseInt(m2.group(1));
           }
