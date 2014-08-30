@@ -105,6 +105,7 @@ public class ExceptionAspect extends Aspect {
     }
     
     System.out.println("Exceptions found:" + expCnt);
+    System.out.println();
 
     for (Exp exp : exceptions) {
       for (String hl : exp.headLines) {
