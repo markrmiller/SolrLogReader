@@ -1,4 +1,4 @@
-timestamp1=^([\\d]+[\\d-]+\\s[\\d:,]+).*
+timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$
 timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS
 
 timestamp2=^([\\d-]+)\\s.*
