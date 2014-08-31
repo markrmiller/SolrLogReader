@@ -69,8 +69,8 @@ public class ExceptionAspect extends Aspect {
   
   @Override
   public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
-     //System.out.println("headline:" + headLine);
-     //System.out.println("entry:" + entry);
+    // System.out.println("headline:" + headLine);
+    // System.out.println("entry:" + entry);
     if (headLine.contains("Exception")) {
       synchronized (exceptions) {
         // System.out.println("Exception:" + headLine);
@@ -80,7 +80,7 @@ public class ExceptionAspect extends Aspect {
         String ts = "";
         if (m.matches()) {
           ts = m.group(1);
-          e = new Exp(m.group(1), m.group(2) + entry);
+          e = new Exp(m.group(1), m.group(2) + "\n" + entry);
         } else {
           throw new RuntimeException();
         }

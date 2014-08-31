@@ -109,15 +109,17 @@ public class ReaderThread extends Thread {
       }
       if (!foundAtLeastOneTimeStamp) {
         System.out.println("WARNING: no log entries found, could not match on timestamp.");
+        return;
       }
       // System.out.println("Using timestamp pattern:" + pattern);
       StringBuilder entry = new StringBuilder();
-
+      boolean done = false;
+      String headline = null;
+      Date dateTs = null;
       do {
         // System.out.println(Thread.currentThread().getId() +  " readlineis:" + pline);
 
         // System.out.println("look at line" + cnt++);
-        Date dateTs = null;
         Matcher tm = pattern.matcher(pline);
         if (tm.matches()) {
           timestamp = tm.group(1);
@@ -135,27 +137,32 @@ public class ReaderThread extends Thread {
                 parseTimeStamps = false;
               }
             }
-            
-            for (Aspect aspect : aspects) {
-              boolean result = aspect.process(timestamp, dateTs, pline, entry.toString());
-              if (result) {
-                break;
-              }
+            if (headline != null) {
+              process(timestamp, entry, headline, dateTs);
+              headline = null;
             }
+            if (done) {
+              break;
+            }
+            headline = pline;
           }
           entry.setLength(0);
+          if (map.position() >= end - start) {
+            done = true;
+          }
         } else {
           // building an entry
           // System.out.println("building:" + pline);
           entry.append(pline + "\n");
         }
         
-        if (map.position() >= end - start) {
-          // we are done
-          return;
-        }
-        
       } while ((pline = readLine(map)) != null);
+      
+      // process any final entry
+      if (headline != null) {
+        process(timestamp, entry, headline, dateTs);
+        headline = null;
+      }
       
     } catch (IOException e) {
       // TODO Auto-generated catch block
@@ -172,6 +179,16 @@ public class ReaderThread extends Thread {
         raf.close();
       } catch (IOException e) {
         e.printStackTrace();
+      }
+    }
+  }
+
+  private void process(String timestamp, StringBuilder entry, String headline, Date dateTs) {
+    for (Aspect aspect : aspects) {
+      // System.out.println("process entry:" + pline + "\n" + entry.toString());
+      boolean result = aspect.process(timestamp, dateTs, headline, entry.toString());
+      if (result) {
+        break;
       }
     }
   }
