@@ -34,6 +34,9 @@ public class CommitAspect extends Aspect {
   @Override
   public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("ts:" + timestamp + " headline:" + headLine + " entry:" + entry);
+    
+    // TODO: track end_commit_flush and line up commit times
+    
     if (headLine.contains("start commit{")) {
       commits.incrementAndGet();
       
@@ -61,6 +64,8 @@ public class CommitAspect extends Aspect {
         }
       }
       
+    } else if (headLine.contains("end_commit")) {
+
     }
     
     return false;
