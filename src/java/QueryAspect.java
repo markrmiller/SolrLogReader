@@ -71,7 +71,7 @@ public class QueryAspect extends Aspect {
       synchronized (queryQueue) {
         queryQueue.add(q);
       }
-      return true;
+      return false;
      
     } 
     return false;
