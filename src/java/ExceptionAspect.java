@@ -28,15 +28,16 @@ import java.util.regex.Pattern;
 
 
 public class ExceptionAspect extends Aspect {
-  public static Pattern TIMESTAMPE = Pattern.compile(
+  public static Pattern TIMESTAMP = Pattern.compile(
       "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
   
   
   private Set<Exp> exceptions = Collections.synchronizedSet(new HashSet<Exp>());
   
-  static class Exp {
+  static class Exp implements Comparable<Exp> {
     List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
     String entry;
+    Date timestamp;
     
     @Override
     public int hashCode() {
@@ -61,6 +62,16 @@ public class ExceptionAspect extends Aspect {
       this.headLines.add(headLine);
       this.entry = entry;
     }
+    @Override
+    public int compareTo(Exp o) {
+      if (this.timestamp == null) {
+        return -1;
+      } else if (o.timestamp == null) {
+        return 1;
+      }
+      
+      return this.timestamp.compareTo(o.timestamp);
+    }
   }
   
   public ExceptionAspect() {
@@ -76,11 +87,12 @@ public class ExceptionAspect extends Aspect {
         // System.out.println("Exception:" + headLine);
         // System.out.println("Entry:" + entry);
         Exp e;
-        Matcher m = TIMESTAMPE.matcher(headLine);
+        Matcher m = TIMESTAMP.matcher(headLine);
         String ts = "";
         if (m.matches()) {
           ts = m.group(1);
           e = new Exp(m.group(1), m.group(2) + "\n" + entry);
+          e.timestamp = dateTs;
         } else {
           throw new RuntimeException();
         }
@@ -107,7 +119,10 @@ public class ExceptionAspect extends Aspect {
     System.out.println("Exceptions found:" + expCnt);
     System.out.println();
 
-    for (Exp exp : exceptions) {
+    List<Exp> expList = new ArrayList<Exp>(exceptions);
+    Collections.sort(expList);
+    
+    for (Exp exp : expList) {
       for (String hl : exp.headLines) {
         System.out.println("(" + hl + ") ");
       }
