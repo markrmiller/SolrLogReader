@@ -103,13 +103,17 @@ public class OpenSearcherAspect extends Aspect {
     Set<Entry<String,OpenSearcherEvent>> entries = mainSearchers.entrySet();
     for (Entry<String,OpenSearcherEvent> entry : entries) {
       RegisterSearcherEvent rse = registerSearchers.get(entry.getKey());
-      Date d1 = entry.getValue().ts;
-      Date d2 = rse.ts;
-      if (rse != null && d1 != null && d2 != null) {
-        long diff = d2.getTime() - d1.getTime();
-        loadTimes.add(diff);
-        loadCnt++;
-        loadTotal += diff;
+      if (rse != null) {
+        Date d1 = entry.getValue().ts;
+        Date d2 = rse.ts;
+        if (rse != null && d1 != null && d2 != null) {
+          long diff = d2.getTime() - d1.getTime();
+          loadTimes.add(diff);
+          loadCnt++;
+          loadTotal += diff;
+        }
+      } else {
+    	  System.err.println("Could not find searcher main search being registered: " + entry.getKey());
       }
     }
     
