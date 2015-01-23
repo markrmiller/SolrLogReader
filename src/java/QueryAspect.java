@@ -26,7 +26,7 @@ public class QueryAspect extends Aspect {
   private static final int NUM_SLOWEST_QUERIES = 20;
 
   public static Pattern QUERY = Pattern.compile(
-      ".*?q=(.*?)(?:&|}).*?hits=(\\d+).*?QTime=(\\d+).*", Pattern.DOTALL);
+      "^.*?[\\&\\{]q\\=(.*?)(?:&|}).*?hits\\=(\\d+).*?QTime\\=(\\d+).*$", Pattern.DOTALL);
   
   private MinMaxPriorityQueue<Query> queryQueue;
   
