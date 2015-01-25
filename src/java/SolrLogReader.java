@@ -175,26 +175,26 @@ public class SolrLogReader {
     
     @Override
     public int compare(Object obj1, Object obj2) {
-      Integer f1 = 0;
-      Integer f2 = 0;
+      Long f1 = 0L;
+      Long f2 = 0L;
       String obj1String = obj1.toString();
       String obj2String = obj2.toString();
       Matcher m = digitPattern.matcher(obj1String);
       if (digitPattern == END_DIGITS && m.matches()) {
-        f1 = Integer.parseInt(m.group(1));
+        f1 = Long.parseLong(m.group(1));
       } else {
         m = digitPattern.matcher(obj1String);
         while (m.find()) {
-          f1 = Integer.parseInt(m.group(1));
+          f1 = Long.parseLong(m.group(1));
         }
       }
       Matcher m2 = digitPattern.matcher(obj2String);
       if (digitPattern == END_DIGITS && m2.matches()) {
-        f2 = Integer.parseInt(m2.group(1));
+        f2 = Long.parseLong(m2.group(1));
       } else {
         m2 = digitPattern.matcher(obj2String);
         while (m2.find()) {
-          f2 = Integer.parseInt(m2.group(1));
+          f2 = Long.parseLong(m2.group(1));
         }
       }
       int result = f2.compareTo(f1);
