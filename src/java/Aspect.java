@@ -21,13 +21,14 @@ import java.util.Date;
 public abstract class Aspect {
   
  /**
+ * @param filename file being processed
  * @param timestamp raw timestamp string
  * @param dateTs timestamp in Date form or null if not available
  * @param headLine the first line of a log entry
  * @param entry the rest of a log entry
  * @return true if aspect handled the entry and doesn't think another aspects needs to
  */
-public abstract boolean process(String timestamp, Date dateTs, String headLine, String entry);
+public abstract boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry);
  
  /**
  * Prints a summary report for the Aspect to standard out.

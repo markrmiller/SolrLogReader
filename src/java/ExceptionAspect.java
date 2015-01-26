@@ -79,7 +79,7 @@ public class ExceptionAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
+  public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("headline:" + headLine);
     // System.out.println("entry:" + entry);
     if (headLine.contains("Exception")) {
@@ -91,7 +91,7 @@ public class ExceptionAspect extends Aspect {
         String ts = "";
         if (m.matches()) {
           ts = m.group(1);
-          e = new Exp(m.group(1), m.group(2) + "\n" + entry);
+          e = new Exp(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
           e.timestamp = dateTs;
         } else {
           throw new RuntimeException();
@@ -99,7 +99,7 @@ public class ExceptionAspect extends Aspect {
   
         boolean added = exceptions.add(e);
         if (!added) {
-          e.headLines.add(ts);
+          e.headLines.add(ts + " : " + filename);
         }
         return true;
       }

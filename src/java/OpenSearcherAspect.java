@@ -57,7 +57,7 @@ public class OpenSearcherAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
+  public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     // start tracking an opening searcher
     Matcher m = OPEN_SEARCHER_ID.matcher(headLine);
     if (m.matches()) {

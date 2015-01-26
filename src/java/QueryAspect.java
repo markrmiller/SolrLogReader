@@ -55,7 +55,7 @@ public class QueryAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
+  public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     Matcher m = QUERY.matcher(headLine);
     if (m.matches()) {
       String query = m.group(1);

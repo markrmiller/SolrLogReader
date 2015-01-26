@@ -46,7 +46,7 @@ public class TextMatchAspect extends Aspect {
   }
   
   @Override
-  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
+  public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     if (dateTs == null) {
       dateTs = new Date(0);
     }

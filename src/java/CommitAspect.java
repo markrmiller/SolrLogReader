@@ -32,7 +32,7 @@ public class CommitAspect extends Aspect {
   private AtomicLong openSearcher = new AtomicLong(0);
   
   @Override
-  public boolean process(String timestamp, Date dateTs, String headLine, String entry) {
+  public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("ts:" + timestamp + " headline:" + headLine + " entry:" + entry);
     
     // TODO: track end_commit_flush and line up commit times

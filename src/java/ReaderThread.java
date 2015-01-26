@@ -138,7 +138,7 @@ public class ReaderThread extends Thread {
               }
             }
             if (headline != null) {
-              process(timestamp, entry, headline, dateTs);
+              process(file.getName(), timestamp, entry, headline, dateTs);
               headline = null;
             }
             if (done) {
@@ -160,7 +160,7 @@ public class ReaderThread extends Thread {
       
       // process any final entry
       if (headline != null) {
-        process(timestamp, entry, headline, dateTs);
+        process(file.getName(), timestamp, entry, headline, dateTs);
         headline = null;
       }
       
@@ -183,10 +183,10 @@ public class ReaderThread extends Thread {
     }
   }
 
-  private void process(String timestamp, StringBuilder entry, String headline, Date dateTs) {
+  private void process(String filename, String timestamp, StringBuilder entry, String headline, Date dateTs) {
     for (Aspect aspect : aspects) {
       // System.out.println("process entry:" + pline + "\n" + entry.toString());
-      boolean result = aspect.process(timestamp, dateTs, headline, entry.toString());
+      boolean result = aspect.process(filename, timestamp, dateTs, headline, entry.toString());
       if (result) {
         break;
       }
