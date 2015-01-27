@@ -28,6 +28,7 @@ public class TextMatchAspect extends Aspect {
   static class Text implements Comparable<Text> {
     String text;
     Date date;
+    String filename;
     @Override
     public int compareTo(Text o) {
       int rslt;
@@ -54,6 +55,7 @@ public class TextMatchAspect extends Aspect {
       Text text = new Text();
       text.text = headLine + (entry != null && entry.length() > 0 ? ":" + entry : "");
       text.date = dateTs;
+      text.filename = filename;
       texts.add(text);
     }
     return false;
@@ -66,7 +68,8 @@ public class TextMatchAspect extends Aspect {
     System.out.println("TextMatch Report: " + text);
     System.out.println("-----------------");
     for (Text t : texts) {
-      System.out.println(t.text);
+      System.out.println("(" + t.filename + ")");
+      System.out.println("  " + t.text);
     }
   }
   
