@@ -82,7 +82,7 @@ public class ExceptionAspect extends Aspect {
   public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("headline:" + headLine);
     // System.out.println("entry:" + entry);
-    if (headLine.contains("Exception")) {
+    if (headLine.contains("Exception") || headLine.contains(" ERROR ")) {
       synchronized (exceptions) {
         // System.out.println("Exception:" + headLine);
         // System.out.println("Entry:" + entry);
