@@ -35,6 +35,7 @@ public class QueryAspect extends Aspect {
     String query;
     Integer qtime;
     Integer results;
+    public String headLine;
     
     @Override
     public int compareTo(Query o) {
@@ -67,6 +68,7 @@ public class QueryAspect extends Aspect {
       q.query = query;
       q.results = results;
       q.qtime = qtime;
+      q.headLine = headLine;
   
       synchronized (queryQueue) {
         queryQueue.add(q);
@@ -86,6 +88,7 @@ public class QueryAspect extends Aspect {
     Query q;
     while ((q = queryQueue.poll()) != null) {
       System.out.println(q);
+      System.out.println("     " + q.headLine);
     }
   }
   
