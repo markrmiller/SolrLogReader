@@ -112,7 +112,7 @@ public class SolrLogReader {
     aspects.add(new OpenSearcherAspect());
     aspects.add(new CommitAspect());
     aspects.add(new QueryAspect());
-    aspects.add(new ExceptionAspect());
+    aspects.add(new ErrorAspect());
     
     for (int i = 1; i < args.length; i++) {
       aspects.add(new TextMatchAspect(args[i]));

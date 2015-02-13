@@ -27,14 +27,14 @@ import java.util.regex.Pattern;
 
 
 
-public class ExceptionAspect extends Aspect {
+public class ErrorAspect extends Aspect {
   public static Pattern TIMESTAMP = Pattern.compile(
       "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
   
   
-  private Set<Exp> exceptions = Collections.synchronizedSet(new HashSet<Exp>());
+  private Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
   
-  static class Exp implements Comparable<Exp> {
+  static class LogError implements Comparable<LogError> {
     List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
     String entry;
     Date timestamp;
@@ -46,24 +46,26 @@ public class ExceptionAspect extends Aspect {
       result = prime * result + ((entry == null) ? 0 : entry.hashCode());
       return result;
     }
+    
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
-      Exp other = (Exp) obj;
+      LogError other = (LogError) obj;
       if (entry == null) {
         if (other.entry != null) return false;
       } else if (!entry.equals(other.entry)) return false;
       return true;
     }
 
-    public Exp(String headLine, String entry) {
+    public LogError(String headLine, String entry) {
       this.headLines.add(headLine);
       this.entry = entry;
     }
+    
     @Override
-    public int compareTo(Exp o) {
+    public int compareTo(LogError o) {
       if (this.timestamp == null) {
         return -1;
       } else if (o.timestamp == null) {
@@ -74,8 +76,8 @@ public class ExceptionAspect extends Aspect {
     }
   }
   
-  public ExceptionAspect() {
-    exceptions = new HashSet<Exp>();
+  public ErrorAspect() {
+    errors = new HashSet<LogError>();
   }
   
   @Override
@@ -83,21 +85,21 @@ public class ExceptionAspect extends Aspect {
     // System.out.println("headline:" + headLine);
     // System.out.println("entry:" + entry);
     if (headLine.contains("Exception") || headLine.contains(" ERROR ")) {
-      synchronized (exceptions) {
+      synchronized (errors) {
         // System.out.println("Exception:" + headLine);
         // System.out.println("Entry:" + entry);
-        Exp e;
+        LogError e;
         Matcher m = TIMESTAMP.matcher(headLine);
         String ts = "";
         if (m.matches()) {
           ts = m.group(1);
-          e = new Exp(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
+          e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
           e.timestamp = dateTs;
         } else {
           throw new RuntimeException();
         }
   
-        boolean added = exceptions.add(e);
+        boolean added = errors.add(e);
         if (!added) {
           e.headLines.add(ts + " : " + filename);
         }
@@ -109,24 +111,24 @@ public class ExceptionAspect extends Aspect {
   
   @Override
   public void printReport() {
-    System.out.println("Exceptions Report");
+    System.out.println("Errors Report");
     System.out.println("-----------------");
     int expCnt = 0;
-    for (Exp e : exceptions) {
+    for (LogError e : errors) {
       expCnt += e.headLines.size();
     }
     
-    System.out.println("Exceptions found:" + expCnt);
+    System.out.println("Errors found:" + expCnt);
     System.out.println();
 
-    List<Exp> expList = new ArrayList<Exp>(exceptions);
-    Collections.sort(expList);
+    List<LogError> errorList = new ArrayList<LogError>(errors);
+    Collections.sort(errorList);
     
-    for (Exp exp : expList) {
-      for (String hl : exp.headLines) {
+    for (LogError error : errorList) {
+      for (String hl : error.headLines) {
         System.out.println("(" + hl + ") ");
       }
-      System.out.println(exp.entry);
+      System.out.println(error.entry);
       System.out.println();
     }
     
