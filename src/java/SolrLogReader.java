@@ -20,6 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +41,7 @@ import java.util.regex.Pattern;
 public class SolrLogReader {
   public static Pattern END_DIGITS = Pattern.compile(".*?(\\d+)$", Pattern.DOTALL);
   public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
+  private static String outputDir;
 
   public static void main(String[] args) throws IOException {
     if (args.length < 1) {
@@ -81,8 +86,17 @@ public class SolrLogReader {
       patterns[i] = Pattern.compile(tsPatterns.get(i), Pattern.DOTALL);
     }
     
+    List<String> textAspects = new ArrayList<String>();
+    
     for (int i = 1; i < args.length; i++) {
-      System.out.println("Using Text Aspect: " + args[i]);
+      if (args[i].equals("-o")) {
+        outputDir = args[++i];
+        System.out.println("Writing file reports to:" + outputDir);
+        System.out.println();
+      } else {
+        System.out.println("Using Text Aspect: " + args[i]);
+        textAspects.add(args[i]);
+      }
     }
     
     long timeStart = new Date().getTime();
@@ -108,14 +122,23 @@ public class SolrLogReader {
     Collections.sort(files, new DigitComparator(digitPattern, true));
     List<Aspect> aspects = new ArrayList<Aspect>();
     
-
+    if (outputDir != null) {
+      Path path = FileSystems.getDefault().getPath(outputDir);
+      try {
+        Files.createDirectory(path);
+      } catch (FileAlreadyExistsException e) {
+        // fine
+      }
+    }
+    
+    
     aspects.add(new OpenSearcherAspect());
     aspects.add(new CommitAspect());
-    aspects.add(new QueryAspect());
+    aspects.add(new QueryAspect(outputDir));
     aspects.add(new ErrorAspect());
     
-    for (int i = 1; i < args.length; i++) {
-      aspects.add(new TextMatchAspect(args[i]));
+    for (String aspect : textAspects) {
+      aspects.add(new TextMatchAspect(aspect, outputDir));
     }
     
     for (File f : files) {
@@ -128,6 +151,7 @@ public class SolrLogReader {
     for (Aspect aspect : aspects) {
       System.out.println();
       aspect.printReport();
+      aspect.close();
     }
 
   }

@@ -16,7 +16,18 @@
  * limitations under the License.
  */
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +39,15 @@ public class QueryAspect extends Aspect {
   public static Pattern QUERY = Pattern.compile(
       "^.*?[\\&\\{]q\\=(.*?)(?:&|}).*?hits\\=(\\d+).*?QTime\\=(\\d+).*$", Pattern.DOTALL);
   
-  private MinMaxPriorityQueue<Query> queryQueue;
+  private final MinMaxPriorityQueue<Query> queryQueue;
+  
+  private AtomicInteger queryCount = new AtomicInteger();
+  
+  private Date oldestDate;
+  
+  private Date latestDate;
+
+  private PrintWriter out;
   
   public static class Query implements Comparable<Query> {
     String timestamp;
@@ -50,9 +69,19 @@ public class QueryAspect extends Aspect {
     
   }
   
-  public QueryAspect() {
-    queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES)
-        .create();
+  public QueryAspect(String outputDir) {
+    queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
+    if (outputDir != null) {
+      try {
+        out  = new PrintWriter(new BufferedWriter(new FileWriter(outputDir + File.separator + "query_report.txt"), 2^20));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Query Report" + "\n");
+        sb.append("-----------------" + "\n");
+        out.write(sb.toString());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
   
   @Override
@@ -71,25 +100,59 @@ public class QueryAspect extends Aspect {
       q.headLine = headLine;
   
       synchronized (queryQueue) {
+        trackOldestLatestTimestamp(dateTs);
+        
         queryQueue.add(q);
+        queryCount.incrementAndGet();
+        if (out != null) {
+          out.write(q.toString() + "\n");
+          out.write("     " + q.headLine + "\n");
+        }
       }
       return false;
      
     } 
     return false;
   }
+
+  private void trackOldestLatestTimestamp(Date dateTs) {
+    if (oldestDate == null) {
+      oldestDate = dateTs;
+    } else if (dateTs != null && dateTs.before(oldestDate)) {
+      oldestDate = dateTs;
+    }
+    
+    if (latestDate == null) {
+      latestDate = dateTs;
+    } else if (dateTs != null && dateTs.after(latestDate)) {
+      latestDate = dateTs;
+    }
+  }
   
   @Override
   public void printReport() {
     System.out.println("Query Report");
     System.out.println("-----------------");
-    
+    System.out.println();
+    if (oldestDate != null && latestDate != null) {
+      long diff = latestDate.getTime() - oldestDate.getTime();
+      long seconds = TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS);
+      
+      float qps = queryCount.get() / (float) seconds;
+      System.out.println("Approx QPS:" + qps + " (careful - across all logs and nodes)");
+    }
+    System.out.println();
     System.out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
     Query q;
     while ((q = queryQueue.poll()) != null) {
       System.out.println(q);
       System.out.println("     " + q.headLine);
     }
+  }
+  
+  @Override
+  public void close() {
+    if (out != null) out.close();
   }
   
 }

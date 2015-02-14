@@ -16,6 +16,11 @@
  * limitations under the License.
  */
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -24,6 +29,7 @@ import java.util.List;
 public class TextMatchAspect extends Aspect {
   private final List<Text> texts = Collections.synchronizedList(new ArrayList<Text>());
   private final String text;
+  private String outputDir;
   
   static class Text implements Comparable<Text> {
     String text;
@@ -42,8 +48,9 @@ public class TextMatchAspect extends Aspect {
     }
   }
   
-  public TextMatchAspect(String text) {
+  public TextMatchAspect(String text, String outputDir) {
     this.text = text;
+    this.outputDir = outputDir;
   }
   
   @Override
@@ -70,6 +77,42 @@ public class TextMatchAspect extends Aspect {
     for (Text t : texts) {
       System.out.println("(" + t.filename + ")");
       System.out.println("  " + t.text);
+    }
+  }
+  
+  @Override
+  public void close() {
+    if (outputDir != null) {
+      fileReport(outputDir);
+    }
+  }
+
+  public void fileReport(String outputDir) {
+    String filename = text.replaceAll("[^a-zA-Z0-9.-]", "_");
+    StringBuilder sb = new StringBuilder();
+    sb.append("TextMatch Report: " + text);
+    sb.append("-----------------");
+    
+    try {
+      Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);
+    } catch (UnsupportedEncodingException e) {
+      // UTF-8
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    
+    for (Text t : texts) {
+      sb = new StringBuilder();
+      sb.append("(" + t.filename + ")");
+      sb.append("  " + t.text);
+      
+      try {
+        Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);
+      } catch (UnsupportedEncodingException e) {
+        // UTF-8
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
   
