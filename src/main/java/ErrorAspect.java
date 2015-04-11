@@ -96,7 +96,7 @@ public class ErrorAspect extends Aspect {
           e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
           e.timestamp = dateTs;
         } else {
-          throw new RuntimeException();
+          e = new LogError("[UNKNOWN TS] : " + filename, headLine + "\n" + entry);
         }
   
         boolean added = errors.add(e);
