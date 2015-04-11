@@ -25,7 +25,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -102,12 +101,21 @@ public class SolrLogReader {
     long timeStart = new Date().getTime();
     List<File> files = new ArrayList<File>();
     File file = new File(args[0]);
-    
-    if (file.isDirectory()) {
-      files.addAll(Arrays.asList(file.listFiles()));
+    String matchText = null;
+    File srcDir;
+    if (file.getName().contains("*") || file.isFile()) {
+      // file matching
+      matchText = file.getName().replaceAll("\\*", ".*");
+      srcDir = file.getParentFile();
     } else {
-      files.add(file);
+      srcDir = file;
     }
+    
+    System.out.println("Scanning Directory: " + srcDir);
+    if (matchText != null) {
+      System.out.println("File Match Text: " + matchText);
+    }
+    getFiles(files, srcDir, matchText);
     
     Pattern pattern = DIGITS;
     for (File f : files) {
@@ -154,6 +162,25 @@ public class SolrLogReader {
       aspect.close();
     }
 
+  }
+
+  private static void getFiles(List<File> files, File file, String matchText) {
+    if (file.isDirectory()) {
+      File[] listFiles = file.listFiles();
+      for (File f : listFiles) {
+        if (f.isFile()) {
+          if (matchText == null || f.getName().matches(matchText)) {
+            files.add(f);
+          }
+        } else {
+          getFiles(files, f, matchText);
+        }
+      }
+    } else {
+      if (matchText == null || file.getName().matches(matchText)) {
+        files.add(file);
+      }
+    }
   }
 
   private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns)
