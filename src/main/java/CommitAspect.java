@@ -31,6 +31,8 @@ public class CommitAspect extends Aspect {
   private AtomicLong softCommit = new AtomicLong(0);
   private AtomicLong openSearcher = new AtomicLong(0);
   
+  // TODO: commits per second - hard / soft / w open search
+  
   @Override
   public boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry) {
     // System.out.println("ts:" + timestamp + " headline:" + headLine + " entry:" + entry);
