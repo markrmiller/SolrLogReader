@@ -20,8 +20,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.ObjectInputStream.GetField;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -47,7 +49,7 @@ public class QueryAspect extends Aspect {
   
   private Date latestDate;
 
-  private PrintWriter out;
+  private PrintWriter fullOutput;
   
   public static class Query implements Comparable<Query> {
     String timestamp;
@@ -73,11 +75,11 @@ public class QueryAspect extends Aspect {
     queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
     if (outputDir != null) {
       try {
-        out  = new PrintWriter(new BufferedWriter(new FileWriter(outputDir + File.separator + "query_report.txt"), 2^20));
+        fullOutput  = new PrintWriter(new BufferedWriter(new FileWriter(outputDir + File.separator + "query_report.txt"), 2^20));
         StringBuilder sb = new StringBuilder();
         sb.append("Query Report" + "\n");
         sb.append("-----------------" + "\n");
-        out.write(sb.toString());
+        fullOutput.write(sb.toString());
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -91,7 +93,7 @@ public class QueryAspect extends Aspect {
       String query = m.group(1);
       Integer results = Integer.parseInt(m.group(2));
       Integer qtime = Integer.parseInt(m.group(3));
-      // System.out.println("add match");
+      // out.println("add match");
       Query q = new Query();
       q.timestamp = timestamp;
       q.query = query;
@@ -104,9 +106,9 @@ public class QueryAspect extends Aspect {
         
         queryQueue.add(q);
         queryCount.incrementAndGet();
-        if (out != null) {
-          out.write(q.toString() + "\n");
-          out.write("     " + q.headLine + "\n");
+        if (fullOutput != null) {
+          fullOutput.write(q.toString() + "\n");
+          fullOutput.write("     " + q.headLine + "\n");
         }
       }
       return false;
@@ -130,29 +132,39 @@ public class QueryAspect extends Aspect {
   }
   
   @Override
-  public void printReport() {
-    System.out.println("Query Report");
-    System.out.println("-----------------");
-    System.out.println();
+  public void printReport(PrintStream out) {
+    out.println("Query Report");
+    out.println("-----------------");
+    out.println();
     if (oldestDate != null && latestDate != null) {
-      long diff = latestDate.getTime() - oldestDate.getTime();
-      long seconds = TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS);
-      
-      float qps = queryCount.get() / (float) seconds;
-      System.out.println("Approx QPS:" + qps + " (careful - across all logs and nodes)");
+      float qps = getQPS();
+      out.println("Approx QPS:" + qps + " (careful - across all logs and nodes)");
     }
-    System.out.println();
-    System.out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
+    out.println();
+    out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
     Query q;
     while ((q = queryQueue.poll()) != null) {
-      System.out.println(q);
-      System.out.println("     " + q.headLine);
+      out.println(q);
+      out.println("     " + q.headLine);
     }
+  }
+
+  private float getQPS() {
+    long diff = latestDate.getTime() - oldestDate.getTime();
+    long seconds = TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS);
+    
+    float qps = queryCount.get() / (float) seconds;
+    return qps;
+  }
+  
+  @Override
+  public String getSummaryLine() {
+    return "QPS: " + getQPS();
   }
   
   @Override
   public void close() {
-    if (out != null) out.close();
+    if (fullOutput != null) fullOutput.close();
   }
   
 }

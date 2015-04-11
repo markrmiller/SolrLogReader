@@ -16,20 +16,27 @@
  * limitations under the License.
  */
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +45,9 @@ import java.util.regex.Pattern;
  * A fast Solr log reader.
  */
 public class SolrLogReader {
-  public static Pattern END_DIGITS = Pattern.compile(".*?(\\d+)$", Pattern.DOTALL);
+  private static final String REPORT_FILENAME = "report.txt";
+  public static Pattern END_DIGITS = Pattern.compile("(.*?)(\\d+)$", Pattern.DOTALL);
+  public static Pattern END_DIGITS2 = Pattern.compile("(.*?)(\\.\\d+)$", Pattern.DOTALL);
   public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
   private static String outputDir;
 
@@ -49,6 +58,7 @@ public class SolrLogReader {
       System.exit(1);
     }
     
+    PrintStream out = System.out;
     Properties props = new Properties();
     FileInputStream fis = new FileInputStream(new File("config.txt"));
     try {
@@ -76,9 +86,9 @@ public class SolrLogReader {
       }
     }
     
-    System.out.println("Configured timestamp patterns: " + tsPatterns);
-    System.out.println("Configured date format patterns:" +  dfPatterns);
-    System.out.println();
+    out.println("# Configured timestamp patterns: " + tsPatterns);
+    out.println("# Configured date format patterns:" +  dfPatterns);
+    out.println();
     
     Pattern[] patterns = new Pattern[tsPatterns.size()];
     for (int i = 0; i < patterns.length; i++) {
@@ -90,10 +100,9 @@ public class SolrLogReader {
     for (int i = 1; i < args.length; i++) {
       if (args[i].equals("-o")) {
         outputDir = args[++i];
-        System.out.println("Writing file reports to:" + outputDir);
-        System.out.println();
+        out.println("# Writing file reports to:" + outputDir);
       } else {
-        System.out.println("Using Text Aspect: " + args[i]);
+        out.println("# Using Text Aspect: " + args[i]);
         textAspects.add(args[i]);
       }
     }
@@ -111,10 +120,13 @@ public class SolrLogReader {
       srcDir = file;
     }
     
-    System.out.println("Scanning Directory: " + srcDir);
+    out.println("# Scanning Directory: " + srcDir);
     if (matchText != null) {
-      System.out.println("File Match Text: " + matchText);
+      out.println("# File Match Text: " + matchText);
     }
+    
+    out.println();
+    
     getFiles(files, srcDir, matchText);
     
     Pattern pattern = DIGITS;
@@ -128,40 +140,78 @@ public class SolrLogReader {
     
     final Pattern digitPattern = pattern;
     Collections.sort(files, new DigitComparator(digitPattern, true));
-    List<Aspect> aspects = new ArrayList<Aspect>();
+    
+    Map<String,LogInstance> logInstances = new HashMap<String,LogInstance>();
+    
     
     if (outputDir != null) {
-      Path path = FileSystems.getDefault().getPath(outputDir);
-      try {
-        Files.createDirectory(path);
-      } catch (FileAlreadyExistsException e) {
-        // fine
-      }
+      createDir(outputDir);
     }
     
-    
-    aspects.add(new OpenSearcherAspect());
-    aspects.add(new CommitAspect());
-    aspects.add(new QueryAspect(outputDir));
-    aspects.add(new ErrorAspect());
-    
-    for (String aspect : textAspects) {
-      aspects.add(new TextMatchAspect(aspect, outputDir));
-    }
+    long totalBytes = 0;
     
     for (File f : files) {
-      processFile(f, aspects, patterns, dfPatterns.toArray(new String[0]));
+      String k;
+      Matcher m = END_DIGITS2.matcher(f.getName());
+      if (m.matches()) {
+        k = m.group(1);
+      } else {
+        k = f.getName();
+      }
+      LogInstance logInstance = logInstances.get(k);
+      if (logInstance == null) {
+        String intanceOutputDir = null;
+        if (outputDir != null) {
+          intanceOutputDir = outputDir + File.separator + k;
+          createDir(intanceOutputDir);
+        }
+        
+        List<Aspect> aspects = new ArrayList<Aspect>();
+        for (String aspect : textAspects) {
+          aspects.add(new TextMatchAspect(aspect, intanceOutputDir));
+        }
+        aspects.add(new OpenSearcherAspect());
+        aspects.add(new CommitAspect());
+        aspects.add(new QueryAspect(intanceOutputDir));
+        aspects.add(new ErrorAspect(intanceOutputDir));
+        logInstance = new LogInstance(aspects);
+        logInstances.put(k, logInstance);
+      }
+      totalBytes += f.length();
+      processFile(f, logInstance.getAspects(), patterns, dfPatterns.toArray(new String[0]), out);
     }
+    
     long timeEnd = new Date().getTime();
     
-    System.out.println("Took " + (timeEnd - timeStart) + "ms");
-
-    for (Aspect aspect : aspects) {
-      System.out.println();
-      aspect.printReport();
-      aspect.close();
+    DecimalFormat df = new DecimalFormat("#.00");
+    
+    out.println();
+    out.println("Took " + df.format((timeEnd - timeStart) / 1000.0 / 60.0) + "min to crunch " + df.format(totalBytes / 1024.0 / 1024.0) + "MB  AVG(" + df.format(totalBytes / (float) files.size() / 1024.0 / 1024.0) + ")");
+    out.println();
+    
+    for (Entry<String,LogInstance> liEntry : logInstances.entrySet()) {
+      out.println("Instance: " + liEntry.getKey());
+      for (Aspect aspect : liEntry.getValue().getAspects()) {
+        out.print("  " + aspect.getSummaryLine() + " ");
+      }
+      out.println();
+      PrintStream entryOut = out;
+      if (outputDir != null) {
+        entryOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputDir + File.separator + liEntry.getKey() + File.separator + REPORT_FILENAME))); 
+      }
+      liEntry.getValue().printResults(entryOut);
+      liEntry.getValue().close();
     }
 
+  }
+
+  private static void createDir(String dir) throws IOException {
+    Path path = FileSystems.getDefault().getPath(dir);
+    try {
+      Files.createDirectory(path);
+    } catch (FileAlreadyExistsException e) {
+      // fine
+    }
   }
 
   private static void getFiles(List<File> files, File file, String matchText) {
@@ -183,9 +233,9 @@ public class SolrLogReader {
     }
   }
 
-  private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns)
+  private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns, PrintStream out)
       throws IOException {
-    System.out.println("Processing file: " + file.getName());
+    out.println("Processing file: " + file.getName());
     int threads = Runtime.getRuntime().availableProcessors();
     RandomAccessFile raf = new RandomAccessFile(file, "r");
     long length = raf.length();
@@ -232,7 +282,7 @@ public class SolrLogReader {
       String obj2String = obj2.toString();
       Matcher m = digitPattern.matcher(obj1String);
       if (digitPattern == END_DIGITS && m.matches()) {
-        f1 = Long.parseLong(m.group(1));
+        f1 = Long.parseLong(m.group(2));
       } else {
         m = digitPattern.matcher(obj1String);
         while (m.find()) {
@@ -241,7 +291,7 @@ public class SolrLogReader {
       }
       Matcher m2 = digitPattern.matcher(obj2String);
       if (digitPattern == END_DIGITS && m2.matches()) {
-        f2 = Long.parseLong(m2.group(1));
+        f2 = Long.parseLong(m2.group(2));
       } else {
         m2 = digitPattern.matcher(obj2String);
         while (m2.find()) {

@@ -16,6 +16,12 @@
  * limitations under the License.
  */
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -25,19 +31,28 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Paths.get;
 
 
 public class ErrorAspect extends Aspect {
+  private static final String CHARTS_FILE_NAME = "charts.html";
+
+
   public static Pattern TIMESTAMP = Pattern.compile(
       "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
   
   
   private Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
+
+
+  private String outputDir;
   
   static class LogError implements Comparable<LogError> {
     List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
     String entry;
     Date timestamp;
+    String rawTimestamp;
     
     @Override
     public int hashCode() {
@@ -76,8 +91,9 @@ public class ErrorAspect extends Aspect {
     }
   }
   
-  public ErrorAspect() {
+  public ErrorAspect(String outputDir) {
     errors = new HashSet<LogError>();
+    this.outputDir = outputDir;
   }
   
   @Override
@@ -95,6 +111,7 @@ public class ErrorAspect extends Aspect {
           ts = m.group(1);
           e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
           e.timestamp = dateTs;
+          e.rawTimestamp = ts;
         } else {
           e = new LogError("[UNKNOWN TS] : " + filename, headLine + "\n" + entry);
         }
@@ -110,28 +127,74 @@ public class ErrorAspect extends Aspect {
   }
   
   @Override
-  public void printReport() {
-    System.out.println("Errors Report");
-    System.out.println("-----------------");
+  public void printReport(PrintStream out) {
+    out.println("Errors Report");
+    out.println("-----------------");
     int expCnt = 0;
     for (LogError e : errors) {
       expCnt += e.headLines.size();
     }
     
-    System.out.println("Errors found:" + expCnt);
-    System.out.println();
+    out.println("Errors found:" + expCnt);
+    out.println();
 
     List<LogError> errorList = new ArrayList<LogError>(errors);
     Collections.sort(errorList);
     
     for (LogError error : errorList) {
       for (String hl : error.headLines) {
-        System.out.println("(" + hl + ") ");
+        out.println("(" + hl + ") ");
       }
-      System.out.println(error.entry);
-      System.out.println();
+      out.println(error.entry);
+      out.println();
     }
     
+    if (outputDir != null) {
+      StringBuilder data = new StringBuilder();
+      for (LogError error : errorList) {
+
+
+        if (data.length() > 0) {
+          data.append(", ");
+        }
+
+        StringBuilder entry = new StringBuilder();
+        for (String hl : error.headLines) {
+          entry.append("(" + hl + ") ");
+        }
+        entry.append(error.entry);
+
+        String tooltip = "\"<div style='font-size:14px;padding:5px 5px 5px 5px'><b>Date=</b>"
+            + error.rawTimestamp
+            + "<br/>" + Matcher.quoteReplacement(entry.toString()).replaceAll("\n", "<br/>")
+            + "</div>\"";
+        if (error.timestamp != null) {
+          data.append("[ 'Error', new Date(" + error.timestamp.getTime() + ")," + "new Date(" + error.timestamp.getTime() + ")," + tooltip + "]");
+        }
+      }
+      String html;
+      try {
+        html = new String(readAllBytes(get("chart_template.html")));
+        
+        html = html.replaceAll("DATA_REPLACE", data.toString());
+        html = html.replaceAll("ABOUT_REPLACE", "Error Count:" + errorList.size());
+        html = html.replaceAll("DESC_REPLACE", "Charts");
+        html = html.replaceAll("HEIGHT_REPLACE", "500");
+        Files.write(Paths.get(outputDir +"/" + CHARTS_FILE_NAME), html.getBytes("UTF-8"));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  public String getSummaryLine() {
+    List<LogError> errorList = new ArrayList<LogError>(errors);
+    Collections.sort(errorList);
+    String first = "";
+    if (errorList.get(0).rawTimestamp != null) {
+      first = " First Error: " + errorList.get(0).rawTimestamp;
+    }
+    return "Errors: " + Integer.toString(errors.size()) + first;
   }
   
 }

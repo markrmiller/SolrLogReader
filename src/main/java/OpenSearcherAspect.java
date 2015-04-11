@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -75,13 +76,13 @@ public class OpenSearcherAspect extends Aspect {
         mainOpens.incrementAndGet();
         mainSearchers.put(id, ose);
       }
-      // System.out.println("add id " + id);
+      // out.println("add id " + id);
       return true;
     } else {
-       // System.out.println("did not match " + headLine);
+       // out.println("did not match " + headLine);
     }
     
-    // System.out.println("found reg searcher");
+    // out.println("found reg searcher");
     m = REGISTER_SEARCHER_ID.matcher(headLine);
     if (m.matches()) {
       String id = m.group(1);
@@ -97,7 +98,7 @@ public class OpenSearcherAspect extends Aspect {
   }
 
   @Override
-  public void printReport() {
+  public void printReport(PrintStream out) {
     long loadCnt = 0;
     long loadTotal = 0;
     Set<Entry<String,OpenSearcherEvent>> entries = mainSearchers.entrySet();
@@ -113,27 +114,27 @@ public class OpenSearcherAspect extends Aspect {
           loadTotal += diff;
         }
       } else {
-    	  System.err.println("Could not find searcher main search being registered: " + entry.getKey());
+    	  // System.err.println("Could not find searcher main search being registered: " + entry.getKey());
       }
     }
     
-    System.out.println("Searcher Report");
-    System.out.println("-----------------");
-    System.out.println("SolrIndexSearcher main open events: " + mainOpens.get());
-    System.out.println("SolrIndexSearcher realtime open events: " + realtimeOpens.get());
-    System.out.println("SolrIndexSearcher register events: " + registers.get());
+    out.println("Searcher Report");
+    out.println("-----------------");
+    out.println("SolrIndexSearcher main open events: " + mainOpens.get());
+    out.println("SolrIndexSearcher realtime open events: " + realtimeOpens.get());
+    out.println("SolrIndexSearcher register events: " + registers.get());
 
     if (loadCnt > 0) {
-      System.out.println("Avg Searcher Load Time: " + new DecimalFormat("##.#").format(loadTotal / (double) loadCnt / 1000) + " seconds");
-      System.out.println(NUM_SLOWEST_LOAD_TIMES + " Slowest Load Times:");
+      out.println("Avg Searcher Load Time: " + new DecimalFormat("##.#").format(loadTotal / (double) loadCnt / 1000) + " seconds");
+      out.println(NUM_SLOWEST_LOAD_TIMES + " Slowest Load Times:");
       Long l;
       while ((l = loadTimes.poll()) != null) {
-        System.out.println(new DecimalFormat("##.#").format((double)l / 1000.0) + " seconds");
+        out.println(new DecimalFormat("##.#").format((double)l / 1000.0) + " seconds");
       }
     }
     mainSearchers.keySet().removeAll(registerSearchers.keySet());
     if (mainSearchers.size() > 0) {
-      System.out.println("Found " + mainSearchers.size() + " searchers that were not registered: " + mainSearchers);
+      out.println("Found " + mainSearchers.size() + " searchers that were not registered: " + mainSearchers);
     }
     
   }

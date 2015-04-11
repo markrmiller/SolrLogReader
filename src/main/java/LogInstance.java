@@ -1,6 +1,3 @@
-import java.io.PrintStream;
-import java.util.Date;
-
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,27 +16,32 @@ import java.util.Date;
  * limitations under the License.
  */
 
-public abstract class Aspect {
+import java.io.PrintStream;
+import java.util.List;
+
+public class LogInstance {
+  private List<Aspect> aspects;
   
-  /**
-   * @param filename file being processed
-   * @param timestamp raw timestamp string
-   * @param dateTs timestamp in Date form or null if not available
-   * @param headLine the first line of a log entry
-   * @param entry the rest of a log entry
-   * @return true if aspect handled the entry and doesn't think another aspects needs to
-   */
-  public abstract boolean process(String filename, String timestamp, Date dateTs, String headLine, String entry);
+  public LogInstance(List<Aspect> aspects) {
+    this.aspects = aspects;
+  }
   
-  /**
-   * Prints a summary report for the Aspect to standard out.
-   */
-  public abstract void printReport(PrintStream out);
+  public List<Aspect> getAspects() {
+    return aspects;
+  }
   
-  public String getSummaryLine() {
-    return "";
-  };
+  public void printResults(PrintStream out)  {
+    for (Aspect aspect : aspects) {
+      out.println();
+      out.println();
+      aspect.printReport(out);
+    }
+  }
   
-  public void close() {};
+  public void close() {
+    for (Aspect aspect : aspects) {
+      aspect.close();
+    }
+  }
   
 }

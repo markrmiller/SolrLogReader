@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -74,16 +75,15 @@ public class CommitAspect extends Aspect {
   }
   
   @Override
-  public void printReport() {
-    System.out.println("Commit Report");
-    System.out.println("-----------------");
-    System.out.println("Commits Found: " + commits.get());
-    System.out.println("Contained Optimize: " + optimize.get());
-    System.out.println("Hard Commits: " + (commits.get() - softCommit.get()));
-    System.out.println("Soft Commits: " + softCommit.get());
-    System.out.println("With openSearcher: " + openSearcher.get());
-    System.out.println("Without openSearcher: " + (commits.get() - openSearcher.get()));
-    
+  public void printReport(PrintStream out) {
+    out.println("Commit Report");
+    out.println("-----------------");
+    out.println("Commits Found: " + commits.get());
+    out.println("Contained Optimize: " + optimize.get());
+    out.println("Hard Commits: " + (commits.get() - softCommit.get()));
+    out.println("Soft Commits: " + softCommit.get());
+    out.println("With openSearcher: " + openSearcher.get());
+    out.println("Without openSearcher: " + (commits.get() - openSearcher.get()));
   }
   
 }

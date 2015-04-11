@@ -17,6 +17,7 @@
  */
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -69,14 +70,14 @@ public class TextMatchAspect extends Aspect {
   }
   
   @Override
-  public void printReport() {
+  public void printReport(PrintStream out) {
     Collections.sort(texts);
     
-    System.out.println("TextMatch Report: " + text);
-    System.out.println("-----------------");
+    out.println("TextMatch Report: " + text);
+    out.println("-----------------");
     for (Text t : texts) {
-      System.out.println("(" + t.filename + ")");
-      System.out.println("  " + t.text);
+      out.println("(" + t.filename + ")");
+      out.println("  " + t.text);
     }
   }
   
