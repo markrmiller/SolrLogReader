@@ -48,7 +48,8 @@
 
       function tpHandler(e) {
         if(e.row != null) {
-            $(".google-visualization-tooltip").html(data.getValue(e.row,3)).css({width:"auto",height:"auto"});
+            $("#output").html(data.getValue(e.row,3));
+            $(".google-visualization-tooltip").html(data.getValue(e.row,1)).css({width:"auto",height:"auto"});
         }        
       }
       google.visualization.events.addListener(chart, 'onmouseover', tpHandler);
@@ -60,7 +61,7 @@
 
   <div id="chart_div" style="width: 80%;"></div>
   <div id="ex0"></div>  
-
+  <div id="output"></div>  
 </body>
 
 

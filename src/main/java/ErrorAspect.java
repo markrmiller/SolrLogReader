@@ -179,7 +179,7 @@ public class ErrorAspect extends Aspect {
         html = html.replaceAll("DATA_REPLACE", data.toString());
         html = html.replaceAll("ABOUT_REPLACE", "Error Count:" + errorList.size());
         html = html.replaceAll("DESC_REPLACE", "Charts");
-        html = html.replaceAll("HEIGHT_REPLACE", "500");
+        html = html.replaceAll("HEIGHT_REPLACE", "150");
         Files.write(Paths.get(outputDir +"/" + CHARTS_FILE_NAME), html.getBytes("UTF-8"));
       } catch (IOException e) {
         throw new RuntimeException(e);
