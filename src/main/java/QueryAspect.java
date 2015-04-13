@@ -150,6 +150,9 @@ public class QueryAspect extends Aspect {
   }
 
   private float getQPS() {
+    if (latestDate == null || oldestDate == null) {
+      return -1;
+    }
     long diff = latestDate.getTime() - oldestDate.getTime();
     long seconds = TimeUnit.SECONDS.convert(diff, TimeUnit.MILLISECONDS);
     
