@@ -16,23 +16,22 @@
  * limitations under the License.
  */
 
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Paths.get;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.Paths.get;
 
 
 public class ErrorAspect extends Aspect {
@@ -43,6 +42,7 @@ public class ErrorAspect extends Aspect {
       "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
   
   
+  private AtomicInteger ooms = new AtomicInteger();
   private Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
 
 
@@ -101,27 +101,29 @@ public class ErrorAspect extends Aspect {
     // System.out.println("headline:" + headLine);
     // System.out.println("entry:" + entry);
     if (headLine.contains("Exception") || headLine.contains(" ERROR ")) {
-      synchronized (errors) {
-        // System.out.println("Exception:" + headLine);
-        // System.out.println("Entry:" + entry);
-        LogError e;
-        Matcher m = TIMESTAMP.matcher(headLine);
-        String ts = "";
-        if (m.matches()) {
-          ts = m.group(1);
-          e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
-          e.timestamp = dateTs;
-          e.rawTimestamp = ts;
-        } else {
-          e = new LogError("[UNKNOWN TS] : " + filename, headLine + "\n" + entry);
-        }
-  
-        boolean added = errors.add(e);
-        if (!added) {
-          e.headLines.add(ts + " : " + filename);
-        }
-        return true;
+      if (headLine.contains("OutOfMemoryError")) {
+        ooms.incrementAndGet();
       }
+      // System.out.println("Exception:" + headLine);
+      // System.out.println("Entry:" + entry);
+      LogError e;
+      Matcher m = TIMESTAMP.matcher(headLine);
+      String ts = "";
+      if (m.matches()) {
+        ts = m.group(1);
+        e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
+        e.timestamp = dateTs;
+        e.rawTimestamp = ts;
+      } else {
+        e = new LogError("[UNKNOWN TS] : " + filename, headLine + "\n" + entry);
+      }
+      
+      boolean added = errors.add(e);
+      if (!added) {
+        e.headLines.add(ts + " : " + filename);
+      }
+      return true;
+      
     }
     return false;
   }
@@ -135,7 +137,7 @@ public class ErrorAspect extends Aspect {
       expCnt += e.headLines.size();
     }
     
-    out.println("Errors found:" + expCnt);
+    out.println("Errors found:" + expCnt + " OOMS:" + ooms.get());
     out.println();
 
     List<LogError> errorList = new ArrayList<LogError>(errors);
@@ -194,7 +196,7 @@ public class ErrorAspect extends Aspect {
     if (errorList.get(0).rawTimestamp != null) {
       first = " First Error: " + errorList.get(0).rawTimestamp;
     }
-    return "Errors: " + Integer.toString(errors.size()) + first;
+    return "Errors: " + Integer.toString(errors.size()) + " OOMS: " + ooms.get() + first;
   }
   
 }
