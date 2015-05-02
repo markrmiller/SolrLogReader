@@ -11,10 +11,10 @@ An optional TextMatchAspect will pull out any logs with matching text, for examp
 If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
 
 If a folder is given, logs are parsed in reverse order if they end with digits.  
-solr.log.0, solr.log.1, solr.log.2, etc
+solr.log.2, solr.log.1, solr.log.0, etc
 
 Logs that look like they come from different servers will be summarized separately.  
-solr-host1.log.0, solr-host2.log.1, solr-host1.log.1, etc
+solr-host1.log.1, solr-host1.log.0, solr-host2.log.0, etc
 
 
 ### FAQ
