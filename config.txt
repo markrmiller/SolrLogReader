@@ -8,5 +8,6 @@ timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS
 timestamp2=^\\S+[\\s-]+(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d).*$
 timestamp2-dateformat=yyyy-MM-dd HH:mm:ss.SSS
 
+# If we enable this permissive (timestamp is just digits) pattern, you can get false positives on the above patterns
 # 870  [main] INFO  org.apache.solr.core.SolrResourceLoader 
-timestamp3=^([\\d-]+)\\s.*
+# timestamp3=^([\\d-]+)\\s.*

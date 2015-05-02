@@ -57,7 +57,6 @@ public class ReaderThread extends Thread {
   public void run() {
     RandomAccessFile raf = null;
     FileChannel channel = null;
-    boolean parseTimeStamps = true;
     // System.out.println("map size:" + (end - start) + " start:" + start + " length:" + length);
     long readEnd = end;
     if (!last) {
@@ -66,6 +65,7 @@ public class ReaderThread extends Thread {
       readEnd = Math.min(readEnd, length);
     }
     
+    String dfString = null;
     try {
       raf = new RandomAccessFile(file, "r");
       channel = raf.getChannel();
@@ -79,7 +79,7 @@ public class ReaderThread extends Thread {
       String timestamp = null;
       String pline = null;
       boolean foundAtLeastOneTimeStamp = false;
-      while (map.position() < end - start) {
+      while (map.position() < readEnd) {
 
         pline = readLine(map);
         if (pline == null) {
@@ -88,15 +88,18 @@ public class ReaderThread extends Thread {
         // System.out.println(Thread.currentThread().getId() + " lineis:" + pline);
         
         int cnt = 0;
+        
         do {
           patternIndex = cnt;
           pattern = patterns[cnt++];
           Matcher tm = pattern.matcher(pline);
-          // System.out.println("Try timestamp pattern: " + pattern + " on line: " + pline);
+          // System.out.println(start + " " + "Try timestamp pattern: " +
+          // pattern + " on line: " + pline);
           if (tm.matches()) {
             // found start of line
             foundAtLeastOneTimeStamp = true;
             timestamp = tm.group(1);
+            dfString = dfPatterns[patternIndex];
             break;
           } else {
             // System.out.println("Failed");
@@ -124,17 +127,14 @@ public class ReaderThread extends Thread {
         if (tm.matches()) {
           timestamp = tm.group(1);
           if (timestamp != null) {
-            String dfString = dfPatterns[patternIndex];
-            // System.out.println("Check df:" + dfString + " for " + patternIndex + " in " + Arrays.asList(dfPatterns));
-            if (parseTimeStamps && dfString != null) {
-              // System.out.println("Found configured Date format pattern: " + dfString);
+            // System.out.println("Check df:" + dfString + " for " +
+            // patternIndex + " in " + Arrays.asList(dfPatterns));
+            if (dfString != null) {
               SimpleDateFormat format = new SimpleDateFormat(dfString);
               try {
                 dateTs = format.parse(timestamp);
               } catch (ParseException e) {
                 e.printStackTrace();
-                // parsing failed, don't try anymore
-                parseTimeStamps = false;
               }
             }
             if (headline != null) {
@@ -194,7 +194,7 @@ public class ReaderThread extends Thread {
   }
   
   public final String readLine(MappedByteBuffer map) throws IOException {
-    StringBuffer input = new StringBuffer();
+    StringBuilder input = new StringBuilder();
     int c = -1;
     boolean eol = false;
     try {
