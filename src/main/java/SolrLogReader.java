@@ -192,7 +192,7 @@ public class SolrLogReader {
     for (Entry<String,LogInstance> liEntry : logInstances.entrySet()) {
       out.println("Instance: " + liEntry.getKey());
       for (Aspect aspect : liEntry.getValue().getAspects()) {
-        out.print("  " + aspect.getSummaryLine() + " ");
+        out.print("  " + aspect.getSummaryLine());
       }
       out.println();
       PrintStream entryOut = out;
