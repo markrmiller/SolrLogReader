@@ -4,7 +4,7 @@ Early days. Crunches and summarizes Solr log files.
 
 **SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...**
 
-Example: **SolrLogReader /solr/logs  **
+Example: **SolrLogReader /solr/logs**  
 
 An optional TextMatchAspect will pull out any logs with matching text, for example: SolrLogReader /solr/logs org.apache.solr.cloud 
 
