@@ -1,53 +1,33 @@
-A high performance Solr log reader / parser.
+## A high performance Solr log reader / parser.
 
-Early days.
+Early days. Crunches and summarizes Solr log files.
 
-SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} ...
+SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...
 
-Example: SolrLogReader /solr/logs org.apache.solr.cloud
+Example: SolrLogReader /solr/logs
+
+An optional TextMatchAspect will pull out any logs with matching text, for example: SolrLogReader /solr/logs org.apache.solr.cloud
+
+If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.
 
 If a folder is given, logs are parsed in reverse order if they end with digits.
+solr.log.0, solr.log.1, solr.log.2, etc
 
-Example Output:
+Logs that look like they come from different servers will be summarized separately.
+solr-host1.log.0, solr-host2.log.1, solr-host1.log.1, etc
 
-Using Text Aspect: org.apache.solr.cloud
 
-Processing file: example1.log
+### FAQ
 
-Took 58ms
+Q: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?
+A: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.
 
-Searcher Report
------------------
-SolrIndexSearcher main open events: 1
 
-SolrIndexSearcher realtime open events: 0
+### Getting Started:
 
-SolrIndexSearcher register events: 1
+wget https://github.com/markrmiller/SolrLogReader/archive/master.zip
 
-Commit Report
------------------
-Commits Found: 2
-
-Contained Optimize: 1
-
-Hard Commits: 2
-
-Soft Commits: 0
-
-With openSearcher: 2
-
-Without openSearcher: 0
-
-Query Report
------------------
-Query [timestamp=6083, query=static+firstSearcher+warming+in+solrconfig.xml, qtime=97, results=0]
-
-Exceptions Report
------------------
-Exceptions found:0
-
-TextMatch Report: org.apache.solr.cloud
------------------
-2871 [main] INFO  org.apache.solr.cloud.ZkController  ￢ﾀﾓ Register node as live in ZooKeeper:/live_nodes/127.0.1.1:8901_solr
-
-7071 [coreZkRegister-1-thread-1] INFO  org.apache.solr.cloud.ZkController  ￢ﾀﾓ We are http://127.0.1.1:8901/solr/collection1/ and leader is http://127.0.1.1:8903/solr/collection1/
+unzip master.zip 
+cd SolrLogReader-master
+javac -cp lib/* src/main/java/*.java
+java -cp lib/*:src/main/java SolrLogReader /path/to/logs
