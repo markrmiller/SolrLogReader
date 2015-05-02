@@ -41,5 +41,5 @@ Entries will be tried until one matches.
 
 ### FAQ
 
-Q: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?  
-A: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.  
+**Q**: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?  
+**A**: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.  
