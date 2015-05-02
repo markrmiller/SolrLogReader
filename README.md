@@ -17,12 +17,6 @@ Logs that look like they come from different servers will be summarized separate
 solr-host1.log.1, solr-host1.log.0, solr-host2.log.0, etc
 
 
-### FAQ
-
-Q: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?  
-A: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.  
-
-
 ### Getting Started:
 
 wget https://github.com/markrmiller/SolrLogReader/archive/master.zip  
@@ -31,3 +25,21 @@ unzip master.zip
 cd SolrLogReader-master  
 javac -cp lib/* src/main/java/*.java  
 java -cp lib/*:src/main/java SolrLogReader /path/to/logs  
+
+
+### Timestamp Patterns
+
+Timestamp patterns can be added or modified in config.txt.
+
+Example:  
+timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$  
+timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS  
+
+The first entry is a Java regex pattern for matching the timestamp. The second entry is for parsing that match into a Java Date.
+Entries will be tried until one matches.
+
+
+### FAQ
+
+Q: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?  
+A: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.  
