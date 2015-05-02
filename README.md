@@ -2,29 +2,29 @@
 
 Early days. Crunches and summarizes Solr log files.  
 
-SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...  
+**SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...**
 
-Example: SolrLogReader /solr/logs  
+Example: **SolrLogReader /solr/logs  **
 
 An optional TextMatchAspect will pull out any logs with matching text, for example: SolrLogReader /solr/logs org.apache.solr.cloud 
 
 If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
 
 If a folder is given, logs are parsed in reverse order if they end with digits.  
-solr.log.2, solr.log.1, solr.log.0, etc
+**solr.log.2, solr.log.1, solr.log.0, etc**
 
 Logs that look like they come from different servers will be summarized separately.  
-solr-host1.log.1, solr-host1.log.0, solr-host2.log.0, etc
+**solr-host1.log.1, solr-host1.log.0, solr-host2.log.0, etc**
 
 
-### Getting Started:
+### Getting Started
 
-wget https://github.com/markrmiller/SolrLogReader/archive/master.zip  
+**wget https://github.com/markrmiller/SolrLogReader/archive/master.zip**  
   
-unzip master.zip  
-cd SolrLogReader-master  
-javac -cp lib/* src/main/java/*.java  
-java -cp lib/*:src/main/java SolrLogReader /path/to/logs  
+**unzip master.zip**  
+**cd SolrLogReader-master**  
+**javac -cp lib/* src/main/java/*.java**  
+**java -cp lib/*:src/main/java SolrLogReader /path/to/logs**  
 
 
 ### Timestamp Patterns
@@ -32,8 +32,8 @@ java -cp lib/*:src/main/java SolrLogReader /path/to/logs
 Timestamp patterns can be added or modified in config.txt.
 
 Example:  
-timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$  
-timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS  
+**timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$**  
+**timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS**  
 
 The first entry is a Java regex pattern for matching the timestamp. The second entry is for parsing that match into a Java Date.
 Entries will be tried until one matches.
