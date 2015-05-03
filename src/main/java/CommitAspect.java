@@ -86,4 +86,32 @@ public class CommitAspect extends Aspect {
     out.println("Without openSearcher: " + (commits.get() - openSearcher.get()));
   }
   
+  /**
+   * @return the commits for tests
+   */
+  public AtomicLong getCommits() {
+    return commits;
+  }
+  
+  /**
+   * @return the optimize for tests
+   */
+  public AtomicLong getOptimize() {
+    return optimize;
+  }
+  
+  /**
+   * @return the softCommit for tests
+   */
+  public AtomicLong getSoftCommit() {
+    return softCommit;
+  }
+  
+  /**
+   * @return the openSearcher for tests
+   */
+  public AtomicLong getOpenSearcher() {
+    return openSearcher;
+  }
+  
 }

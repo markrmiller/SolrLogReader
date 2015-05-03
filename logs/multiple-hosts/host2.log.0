@@ -1,0 +1,2 @@
+2015-04-24 09:42:55,473 INFO org.apache.solr.update.UpdateHandler: start commit{,optimize=false,openSearcher=false,waitSearcher=true,expungeDeletes=false,softCommit=false,prepareCommit=false}
+2015-04-24 09:42:56,263 INFO org.apache.solr.core.SolrCore: SolrDeletionPolicy.onCommit: commits: num=5

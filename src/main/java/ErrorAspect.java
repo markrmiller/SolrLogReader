@@ -42,13 +42,13 @@ public class ErrorAspect extends Aspect {
       "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
   
   
-  private AtomicInteger ooms = new AtomicInteger();
-  private Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
+  private final AtomicInteger ooms = new AtomicInteger();
+  private final Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
 
 
   private String outputDir;
   
-  static class LogError implements Comparable<LogError> {
+  public static class LogError implements Comparable<LogError> {
     List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
     String entry;
     Date timestamp;
@@ -89,10 +89,19 @@ public class ErrorAspect extends Aspect {
       
       return this.timestamp.compareTo(o.timestamp);
     }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+      return "LogError [headLines=" + headLines + ", entry=" + entry + "]";
+    }
   }
   
   public ErrorAspect(String outputDir) {
-    errors = new HashSet<LogError>();
     this.outputDir = outputDir;
   }
   
@@ -133,14 +142,19 @@ public class ErrorAspect extends Aspect {
     out.println("Errors Report");
     out.println("-----------------");
     int expCnt = 0;
-    for (LogError e : errors) {
-      expCnt += e.headLines.size();
+    synchronized (errors) {
+      for (LogError e : errors) {
+        expCnt += e.headLines.size();
+      }
     }
     
     out.println("Errors found:" + expCnt + " OOMS:" + ooms.get());
     out.println();
 
-    List<LogError> errorList = new ArrayList<LogError>(errors);
+    List<LogError> errorList = new ArrayList<LogError>(errors.size());
+    synchronized (errors) {
+      errorList.addAll(errors);
+    }
     Collections.sort(errorList);
     
     for (LogError error : errorList) {
@@ -190,13 +204,37 @@ public class ErrorAspect extends Aspect {
   }
 
   public String getSummaryLine() {
-    List<LogError> errorList = new ArrayList<LogError>(errors);
+    List<LogError> errorList = new ArrayList<LogError>(errors.size());
+    synchronized (errors) {
+      errorList.addAll(errors);
+    }
     Collections.sort(errorList);
     String first = "";
-    if (errorList.get(0).rawTimestamp != null) {
+    if (errorList.size() > 0 && errorList.get(0).rawTimestamp != null) {
       first = " First Error: " + errorList.get(0).rawTimestamp;
     }
     return "Errors: " + Integer.toString(errors.size()) + " OOMS: " + ooms.get() + first;
+  }
+  
+  /**
+   * @return the ooms for tests
+   */
+  public AtomicInteger getOoms() {
+    return ooms;
+  }
+  
+  /**
+   * @return the errors for tests
+   */
+  public Set<LogError> getErrors() {
+    return errors;
+  }
+  
+  /**
+   * @return the outputDir for tests
+   */
+  public String getOutputDir() {
+    return outputDir;
   }
   
 }

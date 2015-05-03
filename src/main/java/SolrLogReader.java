@@ -19,6 +19,7 @@
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -34,6 +35,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,6 +60,11 @@ public class SolrLogReader {
       System.exit(1);
     }
     
+    summarize(args);
+
+  }
+
+  public static Map<String,LogInstance> summarize(String[] args) throws FileNotFoundException, IOException {
     PrintStream out = System.out;
     Properties props = new Properties();
     FileInputStream fis = new FileInputStream(new File("config.txt"));
@@ -150,6 +157,8 @@ public class SolrLogReader {
     
     long totalBytes = 0;
     
+    Map<String,LogInstance> hostToLogInstance = new LinkedHashMap<>();
+    
     for (File f : files) {
       String k;
       Matcher m = END_DIGITS2.matcher(f.getName());
@@ -175,8 +184,10 @@ public class SolrLogReader {
         aspects.add(new QueryAspect(intanceOutputDir));
         aspects.add(new ErrorAspect(intanceOutputDir));
         logInstance = new LogInstance(aspects);
+        hostToLogInstance.put(k, logInstance);
         logInstances.put(k, logInstance);
       }
+      logInstance.track(f);
       totalBytes += f.length();
       processFile(f, logInstance.getAspects(), patterns, dfPatterns.toArray(new String[0]), out);
     }
@@ -202,7 +213,8 @@ public class SolrLogReader {
       liEntry.getValue().printResults(entryOut);
       liEntry.getValue().close();
     }
-
+    
+    return hostToLogInstance;
   }
 
   private static void createDir(String dir) throws IOException {

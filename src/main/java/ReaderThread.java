@@ -111,7 +111,7 @@ public class ReaderThread extends Thread {
         }
       }
       if (!foundAtLeastOneTimeStamp) {
-        System.out.println("WARNING: no log entries found, could not match on timestamp.");
+        // no log entries found, could not match on timestamp
         return;
       }
       // System.out.println("Using timestamp pattern:" + pattern);

@@ -16,11 +16,14 @@
  * limitations under the License.
  */
 
+import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LogInstance {
-  private List<Aspect> aspects;
+  private final List<Aspect> aspects;
+  private final List<File> files = new ArrayList<File>();
   
   public LogInstance(List<Aspect> aspects) {
     this.aspects = aspects;
@@ -42,6 +45,17 @@ public class LogInstance {
     for (Aspect aspect : aspects) {
       aspect.close();
     }
+  }
+  
+  public void track(File f) {
+    files.add(f);
+  }
+
+  /**
+   * @return the files for tests
+   */
+  public List<File> getFiles() {
+    return files;
   }
   
 }

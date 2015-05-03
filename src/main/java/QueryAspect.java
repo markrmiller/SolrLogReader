@@ -22,11 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.ObjectInputStream.GetField;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,9 +36,9 @@ public class QueryAspect extends Aspect {
   public static Pattern QUERY = Pattern.compile(
       "^.*?[\\&\\{]q\\=(.*?)(?:&|}).*?hits\\=(\\d+).*?QTime\\=(\\d+).*$", Pattern.DOTALL);
   
-  private final MinMaxPriorityQueue<Query> queryQueue;
+  private final MinMaxPriorityQueue<Query> queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
   
-  private AtomicInteger queryCount = new AtomicInteger();
+  private final AtomicInteger queryCount = new AtomicInteger();
   
   private Date oldestDate;
   
@@ -72,7 +67,6 @@ public class QueryAspect extends Aspect {
   }
   
   public QueryAspect(String outputDir) {
-    queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
     if (outputDir != null) {
       try {
         fullOutput  = new PrintWriter(new BufferedWriter(new FileWriter(outputDir + File.separator + "query_report.txt"), 2^20));
@@ -143,9 +137,12 @@ public class QueryAspect extends Aspect {
     out.println();
     out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
     Query q;
-    while ((q = queryQueue.poll()) != null) {
-      out.println(q);
-      out.println("     " + q.headLine);
+    
+    synchronized (queryQueue) {
+      while ((q = queryQueue.poll()) != null) {
+        out.println(q);
+        out.println("     " + q.headLine);
+      }
     }
   }
 

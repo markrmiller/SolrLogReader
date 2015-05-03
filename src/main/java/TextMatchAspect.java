@@ -71,13 +71,16 @@ public class TextMatchAspect extends Aspect {
   
   @Override
   public void printReport(PrintStream out) {
-    Collections.sort(texts);
-    
-    out.println("TextMatch Report: " + text);
-    out.println("-----------------");
-    for (Text t : texts) {
-      out.println("(" + t.filename + ")");
-      out.println("  " + t.text);
+    synchronized (texts) {
+      
+      Collections.sort(texts);
+      
+      out.println("TextMatch Report: " + text);
+      out.println("-----------------");
+      for (Text t : texts) {
+        out.println("(" + t.filename + ")");
+        out.println("  " + t.text);
+      }
     }
   }
   
@@ -101,18 +104,19 @@ public class TextMatchAspect extends Aspect {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    
-    for (Text t : texts) {
-      sb = new StringBuilder();
-      sb.append("(" + t.filename + ")");
-      sb.append("  " + t.text);
-      
-      try {
-        Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);
-      } catch (UnsupportedEncodingException e) {
-        // UTF-8
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+    synchronized (texts) {
+      for (Text t : texts) {
+        sb = new StringBuilder();
+        sb.append("(" + t.filename + ")");
+        sb.append("  " + t.text);
+        
+        try {
+          Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);
+        } catch (UnsupportedEncodingException e) {
+          // UTF-8
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }
