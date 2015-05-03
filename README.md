@@ -54,5 +54,6 @@ I use eclipse to develop and run SolrLogReader. Here is how you might run it com
   
 **unzip master.zip**  
 **cd SolrLogReader-master**  
-**javac -cp lib/* src/main/java/*.java**  
-**java -cp lib/*:src/main/java SolrLogReader /path/to/logs**    
+**mvn install**  
+**javac -cp target/lib/* src/main/java/*.java**  
+**java -cp target/lib/*:src/main/java SolrLogReader /path/to/logs**    
