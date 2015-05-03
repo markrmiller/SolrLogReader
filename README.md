@@ -36,8 +36,11 @@ Example:
 **timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$**  
 **timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS**  
 
-The first entry is a Java regex pattern for matching the timestamp. The second entry is for parsing that match into a Java Date.
-Entries will be tried until one matches.
+The first entry is a Java regex pattern for matching the timestamp. http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html  
+
+The second entry is for parsing that match into a Java Date. http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html  
+
+Entries will be tried until one matches. If none match, summary will be done without comparing timestamps.
 
 
 ### FAQ
