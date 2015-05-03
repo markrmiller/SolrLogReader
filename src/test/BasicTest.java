@@ -77,13 +77,6 @@ public class BasicTest extends Assert {
     assertEquals("Wrong number of commits with openSearcher found", 0, commitAspect.getOpenSearcher().get());
     
     assertNotNull(errorAspect);
-    System.out.println("errors (" + errorAspect.getErrors().size() + ")" + errorAspect.getErrors());
-    
-    Set<ErrorAspect.LogError> es = errorAspect.getErrors();
-    int cnt = 0;
-    for (ErrorAspect.LogError error : es) {
-      System.out.println("error (" + cnt++ + ")" + error);
-    }
     
     assertEquals("Wrong number of errors found", 2, errorAspect.getErrors().size());
     assertEquals("Should be no OOMs", 0, errorAspect.getOoms().get());
@@ -91,7 +84,6 @@ public class BasicTest extends Assert {
     
     Set<ErrorAspect.LogError> errors = errorAspect.getErrors();
     for (ErrorAspect.LogError error : errors) {
-      System.out.println("hl:" + error.headLines.get(0));
       assertTrue(error.headLines.get(0).contains("simple.log"));
       assertTrue("Could not find expected text on first line of exception",
           error.entry.contains("org.apache.solr.common.SolrException"));
@@ -99,6 +91,33 @@ public class BasicTest extends Assert {
           error.entry.contains("java.lang.Thread.run"));
     }
     
+  }
+  
+  @Test
+  public void cutOffExceptionTest() throws Exception {
+    String exampleLog = "logs/exceptions/cutoff.log";
+    Map<String,LogInstance> hostToLogInstance = SolrLogReader.summarize(new String[] {exampleLog});
+    assertEquals("We are only pointing to one file", 1, hostToLogInstance.size());
+    List<Aspect> aspects = hostToLogInstance.values().iterator().next().getAspects();
+    
+    ErrorAspect errorAspect = null;
+    CommitAspect commitAspect = null;
+    for (Aspect aspect : aspects) {
+      if (aspect instanceof ErrorAspect) {
+        errorAspect = (ErrorAspect) aspect;
+      } else if (aspect instanceof CommitAspect) {
+        commitAspect = (CommitAspect) aspect;
+      }
+    }
+    
+    assertNotNull(commitAspect);
+    assertEquals("Wrong number of hard commits found", 1, commitAspect.getCommits().get());
+    assertEquals("Wrong number of soft commits found", 1, commitAspect.getSoftCommit().get());
+    assertEquals("Wrong number of commits with openSearcher found", 1, commitAspect.getOpenSearcher().get());
+    
+    assertEquals("Wrong number of errors found: " + errorAspect.getErrors(), 0, errorAspect.getErrors().size());
+    assertEquals("Should be no OOMs", 0, errorAspect.getOoms().get());
+    assertNull("outputdir not set", errorAspect.getOutputDir());
   }
   
   @Test

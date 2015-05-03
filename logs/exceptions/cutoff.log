@@ -1,0 +1,20 @@
+26:09,027 ERROR org.apache.solr.cloud.CloudUtil: 
+org.apache.solr.common.SolrException: Will not load SolrCore collection1_shard2_replica1 because it has been replaced due to failover.
+	at org.apache.solr.cloud.CloudUtil.checkSharedFSFailoverReplaced(CloudUtil.java:76)
+	at org.apache.solr.cloud.ZkController.throwErrorIfReplicaReplaced(ZkController.java:1746)
+	at org.apache.solr.core.CoreContainer$1.call(CoreContainer.java:362)
+	at org.apache.solr.core.CoreContainer$1.call(CoreContainer.java:356)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:262)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+2015-04-24 15:26:09,078 INFO org.apache.solr.common.cloud.ZkStateReader: A cluster state change: WatchedEvent state:SyncConnected type:NodeDataChanged path:/clusterstate.json, has occurred - updating... (live nodes size: 4)
+2015-04-24 15:26:09,213 INFO org.apache.solr.core.SolrConfig: Adding specified lib dirs to ClassLoader
+2015-04-24 15:26:09,214 WARN org.apache.solr.core.SolrResourceLoader: Can't find (or read) directory to add to classloader: ../../../contrib/extraction/lib (resolved as: /var/lib/solr/collection3_shard1_replica1/../../../contrib/extraction/lib).
+2015-04-24 15:26:09,215 WARN org.apache.solr.core.SolrResourceLoader: Can't find (or read) directory to add to classloader: ../../../dist/ (resolved as: /var/lib/solr/collection3_shard1_replica1/../../../dist).
+2015-04-24 15:26:09,215 WARN org.apache.solr.core.SolrResourceLoader: Can't find (or read) directory to add to classloader: ../../../contrib/clustering/lib/ (resolved as: /var/lib/solr/collection3_shard1_replica1/../../../contrib/clustering/lib).
+2015-04-24 15:26:09,215 INFO org.apache.solr.update.UpdateHandler: start commit{,optimize=false,openSearcher=true,waitSearcher=true,expungeDeletes=false,softCommit=true,prepareCommit=false}
+2015-04-24 15:26:09,315 INFO org.apache.solr.search.SolrIndexSearcher: Opening Searcher@5f94f989 main
+2015-04-24 15:26:09,915 INFO org.apache.solr.update.UpdateHandler: end_commit_flush

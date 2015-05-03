@@ -79,7 +79,7 @@ public class ReaderThread extends Thread {
       String timestamp = null;
       String pline = null;
       boolean foundAtLeastOneTimeStamp = false;
-      while (map.position() < readEnd) {
+      while (map.position() < end - start) {
 
         pline = readLine(map);
         if (pline == null) {
