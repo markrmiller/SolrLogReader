@@ -41,31 +41,45 @@
      <target>1.7</target>
     </configuration>
    </plugin>
-
-   <plugin>
+   
+      <plugin>
     <artifactId>maven-assembly-plugin</artifactId>
-    <configuration>
-     <archive>
-      <manifest>
-       <mainClass>SolrLogReader</mainClass>
-      </manifest>
-     </archive>
-     <descriptorRefs>
-      <descriptorRef>jar-with-dependencies</descriptorRef>
-     </descriptorRefs>
-     <finalName>solrlogreader</finalName>
-     <appendAssemblyId>false</appendAssemblyId>
-    </configuration>
+  
     <executions>
      <execution>
-      <id>make-assembly</id> <!-- this is used for inheritance merges -->
-      <phase>package</phase> <!-- bind to the packaging phase -->
+      <configuration>
+       <archive>
+        <manifest>
+         <mainClass>SolrLogReader</mainClass>
+        </manifest>
+       </archive>
+       <descriptorRefs>
+        <descriptorRef>jar-with-dependencies</descriptorRef>
+       </descriptorRefs>
+       <finalName>solrlogreader-one-jar</finalName>
+       <appendAssemblyId>false</appendAssemblyId>
+      </configuration>
+      <id>jar</id>
+      <phase>package</phase>
+      <goals>
+       <goal>single</goal>
+      </goals>
+     </execution>
+     <execution>
+      <configuration>
+       <descriptors>
+        <descriptor>src/main/assembly/zip.xml</descriptor>
+       </descriptors>
+      </configuration>
+      <id>dist</id>
+      <phase>install</phase>
       <goals>
        <goal>single</goal>
       </goals>
      </execution>
     </executions>
    </plugin>
+   
    <plugin>
     <groupId>com.github.wvengen</groupId>
     <artifactId>proguard-maven-plugin</artifactId>
@@ -87,7 +101,7 @@
      </options>
 
      <maxMemory>512m</maxMemory>
-     <injar>solrlogreader.jar</injar>
+     <injar>solrlogreader-one-jar.jar</injar>
      <outjar>slr.jar</outjar>
      <obfuscate>false</obfuscate>
 
@@ -112,6 +126,26 @@
        <overWriteReleases>false</overWriteReleases>
        <overWriteSnapshots>false</overWriteSnapshots>
        <overWriteIfNewer>true</overWriteIfNewer>
+      </configuration>
+     </execution>
+    </executions>
+   </plugin>
+
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>1.1</version>
+    <executions>
+     <execution>
+      <phase>prepare-package</phase>
+      <goals>
+       <goal>run</goal>
+      </goals>
+      <configuration>
+       <tasks>
+        <copy file="config.txt" tofile="${project.build.directory}/config.txt" />
+        <copy file="chart_template.html" tofile="${project.build.directory}/chart_template.html" />
+       </tasks>
       </configuration>
      </execution>
     </executions>
