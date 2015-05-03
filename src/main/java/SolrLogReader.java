@@ -200,17 +200,38 @@ public class SolrLogReader {
     out.println("Took " + df.format((timeEnd - timeStart) / 1000.0 / 60.0) + "min to crunch " + df.format(totalBytes / 1024.0 / 1024.0) + "MB  AVG(" + df.format(totalBytes / (float) files.size() / 1024.0 / 1024.0) + ")");
     out.println();
     
+    StringBuilder summary = new StringBuilder();
+    summary.append("- Summary Report -\n\n");
     for (Entry<String,LogInstance> liEntry : logInstances.entrySet()) {
-      out.println("Instance: " + liEntry.getKey());
+      summary.append("Instance: " + liEntry.getKey() + "\n");
       for (Aspect aspect : liEntry.getValue().getAspects()) {
-        out.print("  " + aspect.getSummaryLine());
+        summary.append("  " + aspect.getSummaryLine());
       }
-      out.println();
+      summary.append("\n");
+    }
+    out.print(summary + "\n\n");
+    if (outputDir != null) {
+      PrintStream summaryOut = new PrintStream(
+          new BufferedOutputStream(new FileOutputStream(outputDir + File.separator + "summary.txt")));
+      summaryOut.print(summary);
+      summaryOut.close();
+    }
+    
+    for (Entry<String,LogInstance> liEntry : logInstances.entrySet()) {
       PrintStream entryOut = out;
       if (outputDir != null) {
-        entryOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputDir + File.separator + liEntry.getKey() + File.separator + REPORT_FILENAME))); 
+        entryOut = new PrintStream(new BufferedOutputStream(
+            new FileOutputStream(outputDir + File.separator + liEntry.getKey() + File.separator + REPORT_FILENAME)));
       }
+      entryOut.println("* Instance Report: " + liEntry.getKey());
+      for (Aspect aspect : liEntry.getValue().getAspects()) {
+        entryOut.print("  " + aspect.getSummaryLine());
+      }
+      
       liEntry.getValue().printResults(entryOut);
+      if (outputDir != null) {
+        entryOut.close();
+      }
       liEntry.getValue().close();
     }
     
