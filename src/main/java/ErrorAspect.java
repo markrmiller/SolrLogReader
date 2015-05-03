@@ -31,22 +31,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class ErrorAspect extends Aspect {
   private static final String CHARTS_FILE_NAME = "charts.html";
-
-
-  public static Pattern TIMESTAMP = Pattern.compile(
-      "(.*?\\s(?:ERROR|WARN|INFO|DEBUG|TRACE))(.*)", Pattern.DOTALL);
-  
   
   private final AtomicInteger ooms = new AtomicInteger();
   private final Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
 
 
   private String outputDir;
+  
+  private boolean sawUnknownTimestamp = false;
   
   public static class LogError implements Comparable<LogError> {
     List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
@@ -110,22 +106,23 @@ public class ErrorAspect extends Aspect {
     // System.out.println("headline:" + headLine);
     // System.out.println("entry:" + entry);
     if (headLine.contains("Exception") || headLine.contains(" ERROR ")) {
+      if (dateTs == null) {
+        sawUnknownTimestamp = true;
+      }
+      
       if (headLine.contains("OutOfMemoryError")) {
         ooms.incrementAndGet();
       }
       // System.out.println("Exception:" + headLine);
       // System.out.println("Entry:" + entry);
       LogError e;
-      Matcher m = TIMESTAMP.matcher(headLine);
+      
       String ts = "";
-      if (m.matches()) {
-        ts = m.group(1);
-        e = new LogError(m.group(1) + " : " + filename, m.group(2) + "\n" + entry);
-        e.timestamp = dateTs;
-        e.rawTimestamp = ts;
-      } else {
-        e = new LogError("[UNKNOWN TS] : " + filename, headLine + "\n" + entry);
-      }
+      
+      e = new LogError(timestamp + " : " + filename, headLine + "\n" + entry);
+      e.timestamp = dateTs;
+      e.rawTimestamp = timestamp;
+
       
       boolean added = errors.add(e);
       if (!added) {
@@ -235,6 +232,13 @@ public class ErrorAspect extends Aspect {
    */
   public String getOutputDir() {
     return outputDir;
+  }
+  
+  /**
+   * @return the sawUnknownTimestamp for tests
+   */
+  public boolean getSawUnknownTimestamp() {
+    return sawUnknownTimestamp;
   }
   
 }

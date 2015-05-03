@@ -1,13 +1,18 @@
 # timestamp and dateformat patterns
 
+# The first entry is a Java regex pattern for matching the timestamp.
+# It should have two capturing groups using parenthesis - the first group pulls the timestamp and the second group pulls the rest of the line.
+# The second entry is for parsing that match into a Java Date.
+# Entries will be tried until one matches.
+
 # 2014-06-08 12:57:14,024 INFO org.apache.solr.core.SolrCore
-timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$
+timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d)(.*)$
 timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS
 
 # INFO  - 2013-07-16 10:09:11.023; org.apache.solr.common.cloud.ConnectionManager;
-timestamp2=^\\S+[\\s-]+(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d).*$
+timestamp2=^\\S+[\\s-]+(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d);(.*)$
 timestamp2-dateformat=yyyy-MM-dd HH:mm:ss.SSS
 
 # If we enable this permissive (timestamp is just digits) pattern, you can get false positives on the above patterns
 # 870  [main] INFO  org.apache.solr.core.SolrResourceLoader 
-# timestamp3=^([\\d-]+)\\s.*
+# timestamp3=^([\\d-]+)\\s(.*)

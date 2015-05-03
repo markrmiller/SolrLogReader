@@ -102,7 +102,7 @@ public class ReaderThread extends Thread {
             dfString = dfPatterns[patternIndex];
             break;
           } else {
-            // System.out.println("Failed");
+            // System.out.println("Failed " + pattern + " " + pline);
           }
         } while (cnt < patterns.length);
 
@@ -144,7 +144,7 @@ public class ReaderThread extends Thread {
             if (done) {
               break;
             }
-            headline = pline;
+            headline = tm.group(2);
           }
           entry.setLength(0);
           if (map.position() >= end - start) {
