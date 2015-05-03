@@ -2,11 +2,11 @@
 
 Early days. Crunches and summarizes Solr log files.  
 
-**SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...**
+**java -jar slr.jar [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...**
 
-Example: **SolrLogReader /solr/logs**  
+Example: **java -jar slr.jar /solr/logs**  
 
-An optional TextMatchAspect will pull out any logs with matching text, for example: SolrLogReader /solr/logs org.apache.solr.cloud 
+An optional TextMatchAspect will pull out any logs with matching text, for example: **java -jar slr.jar /solr/logs org.apache.solr.cloud** 
 
 If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
 
@@ -19,12 +19,13 @@ Logs that look like they come from different servers will be summarized separate
 
 ### Getting Started
 
-**wget https://github.com/markrmiller/SolrLogReader/archive/master.zip**  
-  
-**unzip master.zip**  
-**cd SolrLogReader-master**  
-**javac -cp lib/* src/main/java/*.java**  
-**java -cp lib/*:src/main/java SolrLogReader /path/to/logs**  
+Download SolrLogReader.
+
+Extract it.
+
+Run it.
+
+**java -jar slr.jar /path/to/logs**
 
 
 ### Timestamp Patterns
@@ -42,4 +43,16 @@ Entries will be tried until one matches.
 ### FAQ
 
 **Q**: Can I just process the Solr logs in a deep directory hierarchy with lots of log files?  
-**A**: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.  
+**A**: SolrLogReader /solr/logs/solr* A filename with a glob pattern will be used to match against file names for all files under the /solr/logs directory hierarchy.
+
+
+#### Developer Help
+
+I use eclipse to develop and run SolrLogReader. Here is how you might run it command line.
+
+**wget https://github.com/markrmiller/SolrLogReader/archive/master.zip**  
+  
+**unzip master.zip**  
+**cd SolrLogReader-master**  
+**javac -cp lib/* src/main/java/*.java**  
+**java -cp lib/*:src/main/java SolrLogReader /path/to/logs**    
