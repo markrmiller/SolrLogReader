@@ -9,6 +9,7 @@
 timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d)(.*)$
 timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS
 
+# The Solr 5.1 default
 # INFO  - 2013-07-16 10:09:11.023; org.apache.solr.common.cloud.ConnectionManager;
 timestamp2=^\\S+[\\s-]+(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d);(.*)$
 timestamp2-dateformat=yyyy-MM-dd HH:mm:ss.SSS

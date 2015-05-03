@@ -33,10 +33,11 @@ Run it.
 Timestamp patterns can be added or modified in config.txt.
 
 Example:  
-**timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d).*$**  
+**timestamp1=^(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d)(.*)$**  
 **timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS**  
 
-The first entry is a Java regex pattern for matching the timestamp. http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html  
+The first entry is a Java regex pattern for matching the timestamp. http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+The first entry should capture two groups using parenthesis. The first group should capture the timestamp and the second group should capture the rest of the line.
 
 The second entry is for parsing that match into a Java Date. http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html  
 
