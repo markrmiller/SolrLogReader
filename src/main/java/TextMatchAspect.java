@@ -36,6 +36,8 @@ public class TextMatchAspect extends Aspect {
     String text;
     Date date;
     String filename;
+    String timestamp;
+    
     @Override
     public int compareTo(Text o) {
       int rslt;
@@ -63,6 +65,7 @@ public class TextMatchAspect extends Aspect {
       Text text = new Text();
       text.text = headLine + (entry != null && entry.length() > 0 ? ":" + entry : "");
       text.date = dateTs;
+      text.timestamp = timestamp;
       text.filename = filename;
       texts.add(text);
     }
@@ -78,8 +81,8 @@ public class TextMatchAspect extends Aspect {
       out.println("TextMatch Report: " + text);
       out.println("-----------------");
       for (Text t : texts) {
-        out.println("(" + t.filename + ")");
-        out.println("  " + t.text);
+        out.println("(" + t.timestamp + " : " + t.filename + ")");
+        out.println("  " + t.text + "\n");
       }
     }
   }
@@ -92,13 +95,13 @@ public class TextMatchAspect extends Aspect {
   }
 
   public void fileReport(String outputDir) {
-    String filename = text.replaceAll("[^a-zA-Z0-9.-]", "_");
+    String filename = text.replaceAll("[^a-zA-Z0-9.-]", "_") + ".txt";
     StringBuilder sb = new StringBuilder();
-    sb.append("TextMatch Report: " + text);
+    sb.append("TextMatch Report: " + text + "\n");
     sb.append("-----------------");
     
     try {
-      Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);
+      Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.CREATE);
     } catch (UnsupportedEncodingException e) {
       // UTF-8
     } catch (IOException e) {
@@ -107,8 +110,8 @@ public class TextMatchAspect extends Aspect {
     synchronized (texts) {
       for (Text t : texts) {
         sb = new StringBuilder();
-        sb.append("(" + t.filename + ")");
-        sb.append("  " + t.text);
+        sb.append("(" + t.timestamp + " : " + t.filename + ")\n");
+        sb.append("  " + t.text + "\n\n");
         
         try {
           Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.APPEND);

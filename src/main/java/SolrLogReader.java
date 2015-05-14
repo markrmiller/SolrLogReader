@@ -176,13 +176,13 @@ public class SolrLogReader {
         }
         
         List<Aspect> aspects = new ArrayList<Aspect>();
-        for (String aspect : textAspects) {
-          aspects.add(new TextMatchAspect(aspect, intanceOutputDir));
-        }
         aspects.add(new OpenSearcherAspect());
         aspects.add(new CommitAspect());
         aspects.add(new QueryAspect(intanceOutputDir));
         aspects.add(new ErrorAspect(intanceOutputDir));
+        for (String aspect : textAspects) {
+          aspects.add(new TextMatchAspect(aspect, intanceOutputDir));
+        }
         logInstance = new LogInstance(aspects);
         hostToLogInstance.put(k, logInstance);
         logInstances.put(k, logInstance);
