@@ -29,6 +29,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,7 +54,13 @@ public class SolrLogReader {
   public static Pattern END_DIGITS2 = Pattern.compile("(.*?)(\\.\\d+)$", Pattern.DOTALL);
   public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
   private static String outputDir;
+  private static Range range;
 
+  public static class Range {
+    Date start;
+    Date end;
+  }
+  
   public static void main(String[] args) throws IOException {
     if (args.length < 1) {
       System.out.println("Usage: SolrLogReader [file or folder path] {TextMatchAspect} {TextMatchAspect} ...");
@@ -108,6 +116,33 @@ public class SolrLogReader {
       if (args[i].equals("-o")) {
         outputDir = args[++i];
         out.println("# Writing file reports to:" + outputDir);
+      }
+      if (args[i].equals("-r")) {
+        String startDate = args[++i];
+        String endDate = args[++i];
+        
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date start = null;
+        try {
+          start = format.parse(startDate);
+        } catch (ParseException e) {
+          e.printStackTrace();
+        }
+        
+        Date end = null;
+        try {
+          end = format.parse(endDate);
+        } catch (ParseException e) {
+          e.printStackTrace();
+        }
+        
+        if (start != null && end != null) {
+          range = new Range();
+          range.start = start;
+          range.end = end;
+        }
+        
+        out.println("# Range:" + startDate + ", " + endDate);
       } else {
         out.println("# Using Text Aspect: " + args[i]);
         textAspects.add(args[i]);
@@ -278,7 +313,8 @@ public class SolrLogReader {
     long end = chunkSize;
     List<ReaderThread> threadReaders = new ArrayList<ReaderThread>();
     for (int i = 0; i < threads; i++) {
-      ReaderThread rt = new ReaderThread(file, start, end, length, i == threads - 1, aspects, patterns, dfPatterns);
+      ReaderThread rt = new ReaderThread(file, start, end, length, i == threads - 1, aspects, patterns, dfPatterns,
+          range);
       threadReaders.add(rt);
       rt.start();
       start = start + chunkSize;

@@ -40,8 +40,10 @@ public class ReaderThread extends Thread {
   private Pattern pattern;
   private String[] dfPatterns;
   private int patternIndex;
+  private SolrLogReader.Range range;
 
-  public ReaderThread(File file, long start, long end, long length, boolean endOfFileThread, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns)
+  public ReaderThread(File file, long start, long end, long length, boolean endOfFileThread, List<Aspect> aspects,
+      Pattern[] patterns, String[] dfPatterns, SolrLogReader.Range range)
       throws IOException {
     this.aspects = aspects;
     this.start = start;
@@ -52,6 +54,7 @@ public class ReaderThread extends Thread {
     this.length = length;
     this.patterns = patterns;
     this.dfPatterns = dfPatterns;
+    this.range = range;
   }
   
   public void run() {
@@ -184,6 +187,11 @@ public class ReaderThread extends Thread {
   }
 
   private void process(String filename, String timestamp, StringBuilder entry, String headline, Date dateTs) {
+    if (range != null && dateTs != null) {
+      if (dateTs.before(range.start) || dateTs.after(range.end)) {
+        return;
+      }
+    }
     for (Aspect aspect : aspects) {
       // System.out.println("process entry:" + pline + "\n" + entry.toString());
       boolean result = aspect.process(filename, timestamp, dateTs, headline, entry.toString());
