@@ -70,7 +70,7 @@ public class ErrorAspect extends Aspect {
 
       errors.add(e);
       
-      return true;
+      return false;
       
     }
     return false;

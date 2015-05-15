@@ -77,7 +77,7 @@ public class OpenSearcherAspect extends Aspect {
         mainSearchers.put(id, ose);
       }
       // out.println("add id " + id);
-      return true;
+      return false;
     } else {
        // out.println("did not match " + headLine);
     }
@@ -91,7 +91,7 @@ public class OpenSearcherAspect extends Aspect {
       rse.ts = dateTs;
       registerSearchers.put(id, rse);
       registers.incrementAndGet();
-      return true;
+      return false;
     }
     
     return false;
