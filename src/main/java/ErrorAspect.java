@@ -34,7 +34,7 @@ import java.util.regex.Matcher;
 
 
 public class ErrorAspect extends Aspect {
-  private static final String CHARTS_FILE_NAME = "charts.html";
+  private static final String CHARTS_FILE_NAME = "error-chart.html";
   
   private final AtomicInteger ooms = new AtomicInteger();
   private final Set<LogEntry> errors = Collections.synchronizedSet(new HashSet<LogEntry>());
@@ -97,40 +97,44 @@ public class ErrorAspect extends Aspect {
     }
     
     if (outputDir != null) {
-      StringBuilder data = new StringBuilder();
-      for (LogEntry error : errorList) {
+      writeHtmlErrorChart(errorList);
+    }
+  }
+
+  private void writeHtmlErrorChart(List<LogEntry> errorList) {
+    StringBuilder data = new StringBuilder();
+    for (LogEntry error : errorList) {
 
 
-        if (data.length() > 0) {
-          data.append(", ");
-        }
-
-        StringBuilder entry = new StringBuilder();
-        
-        entry.append("(" + error.headLine + ") ");
-        
-        entry.append(error.entry);
-
-        String tooltip = "\"<div style='font-size:14px;padding:5px 5px 5px 5px'><b>Date=</b>"
-            + error.rawTimestamp
-            + "<br/>" + Matcher.quoteReplacement(entry.toString()).replaceAll("\n", "<br/>")
-            + "</div>\"";
-        if (error.timestamp != null) {
-          data.append("[ 'Error', new Date(" + error.timestamp.getTime() + ")," + "new Date(" + error.timestamp.getTime() + ")," + tooltip + "]");
-        }
+      if (data.length() > 0) {
+        data.append(", ");
       }
-      String html;
-      try {
-        html = new String(readAllBytes(get("chart_template.html")));
-        
-        html = html.replaceAll("DATA_REPLACE", data.toString());
-        html = html.replaceAll("ABOUT_REPLACE", "Error Count:" + errorList.size());
-        html = html.replaceAll("DESC_REPLACE", "Charts");
-        html = html.replaceAll("HEIGHT_REPLACE", "150");
-        Files.write(Paths.get(outputDir +"/" + CHARTS_FILE_NAME), html.getBytes("UTF-8"));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+
+      StringBuilder entry = new StringBuilder();
+      
+      entry.append("(" + error.headLine + ") ");
+      
+      entry.append(error.entry);
+
+      String tooltip = "\"<div style='font-size:14px;padding:5px 5px 5px 5px'><b>Date=</b>"
+          + error.rawTimestamp
+          + "<br/>" + Matcher.quoteReplacement(entry.toString()).replaceAll("\n", "<br/>")
+          + "</div>\"";
+      if (error.timestamp != null) {
+        data.append("[ 'Error', new Date(" + error.timestamp.getTime() + ")," + "new Date(" + error.timestamp.getTime() + ")," + tooltip + "]");
       }
+    }
+    String html;
+    try {
+      html = new String(readAllBytes(get("chart_template.html")));
+      
+      html = html.replaceAll("DATA_REPLACE", data.toString());
+      html = html.replaceAll("ABOUT_REPLACE", "Error Count:" + errorList.size());
+      html = html.replaceAll("DESC_REPLACE", "Charts");
+      html = html.replaceAll("HEIGHT_REPLACE", "150");
+      Files.write(Paths.get(outputDir +"/" + CHARTS_FILE_NAME), html.getBytes("UTF-8"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
