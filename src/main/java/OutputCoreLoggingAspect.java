@@ -45,7 +45,7 @@ public class OutputCoreLoggingAspect extends Aspect {
         fullOutput = new PrintWriter(
             new BufferedWriter(new FileWriter(outputDir + File.separator + "core-logging.txt"), 2 ^ 20));
         StringBuilder sb = new StringBuilder();
-        sb.append("Core Logging" + "\n");
+        sb.append("Core Logging (No updates or queries)" + "\n");
         sb.append("-----------------" + "\n");
         fullOutput.write(sb.toString());
       } catch (IOException e) {
