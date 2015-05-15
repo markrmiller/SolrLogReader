@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 import com.google.common.collect.MinMaxPriorityQueue;
 
 public class QueryAspect extends Aspect {
-  private static final int NUM_SLOWEST_QUERIES = 20;
+  private static final int NUM_SLOWEST_QUERIES = 10;
 
   public static Pattern QUERY = Pattern.compile(
       "^.*?[\\&\\{]q\\=(.*?)(?:&|}).*?hits\\=(\\d+).*?QTime\\=(\\d+).*$", Pattern.DOTALL);
@@ -60,7 +60,7 @@ public class QueryAspect extends Aspect {
     
     @Override
     public String toString() {
-      return "Query [timestamp=" + timestamp + ", query=" + query + ", qtime="
+      return "Query: " + query + "\nInfo: [timestamp=" + timestamp + ", qtime="
           + qtime + ", results=" + results + "]";
     }
     
@@ -69,10 +69,11 @@ public class QueryAspect extends Aspect {
   public QueryAspect(String outputDir) {
     if (outputDir != null) {
       try {
-        fullOutput  = new PrintWriter(new BufferedWriter(new FileWriter(outputDir + File.separator + "query_report.txt"), 2^20));
+        fullOutput = new PrintWriter(
+            new BufferedWriter(new FileWriter(outputDir + File.separator + "query-report.txt"), 2 ^ 20));
         StringBuilder sb = new StringBuilder();
         sb.append("Query Report" + "\n");
-        sb.append("-----------------" + "\n");
+        sb.append("-----------------" + "\n\n");
         fullOutput.write(sb.toString());
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -102,7 +103,7 @@ public class QueryAspect extends Aspect {
         queryCount.incrementAndGet();
         if (fullOutput != null) {
           fullOutput.write(q.toString() + "\n");
-          fullOutput.write("     " + q.headLine + "\n");
+          fullOutput.write("Log: " + q.headLine + "\n\n");
         }
       }
       return false;
@@ -132,7 +133,7 @@ public class QueryAspect extends Aspect {
     out.println();
     if (oldestDate != null && latestDate != null) {
       float qps = getQPS();
-      out.println("Approx QPS:" + qps + " (careful - across all logs and nodes)");
+      out.println("Approx QPS:" + qps);
     }
     out.println();
     out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
@@ -142,7 +143,7 @@ public class QueryAspect extends Aspect {
     synchronized (queryQueue) {
       while ((q = queryQueue.poll()) != null) {
         out.println(q);
-        out.println("     LogLine: " + q.headLine);
+        out.println("Log: " + q.headLine);
         out.println();
       }
     }
