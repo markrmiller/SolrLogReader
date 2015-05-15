@@ -63,7 +63,7 @@ public class OutputCoreLoggingAspect extends Aspect {
         e.timestamp = dateTs;
         e.rawTimestamp = timestamp;
         
-        // TODO: something more RAM efficient
+        // TODO: something more RAM efficient ??
         synchronized (ss) {
           ss.add(e);
         }
@@ -91,12 +91,17 @@ public class OutputCoreLoggingAspect extends Aspect {
   }
   
   @Override
+  public void newFile() {
+    flushSS();
+    ss.clear();
+  }
+  
+  @Override
   public void close() {
     if (fullOutput != null) {
       flushSS();
       fullOutput.close();
     }
   }
-
   
 }

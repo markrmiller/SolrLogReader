@@ -40,6 +40,11 @@ public abstract class Aspect {
     return "";
   };
   
-  public void close() {};
+  public void close() {}
+  
+  /**
+   * Notification processing has moved to a new file.
+   */
+  public void newFile() {}
   
 }

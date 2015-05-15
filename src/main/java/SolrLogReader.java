@@ -304,6 +304,11 @@ public class SolrLogReader {
   private static void processFile(File file, List<Aspect> aspects, Pattern[] patterns, String[] dfPatterns, PrintStream out)
       throws IOException {
     out.println("Processing file: " + file.getName());
+    
+    for (Aspect aspect : aspects) {
+      aspect.newFile();
+    }
+    
     int threads = Runtime.getRuntime().availableProcessors();
     RandomAccessFile raf = new RandomAccessFile(file, "r");
     long length = raf.length();
