@@ -136,12 +136,14 @@ public class QueryAspect extends Aspect {
     }
     out.println();
     out.println(NUM_SLOWEST_QUERIES + " slowest queries:");
+    out.println();
     Query q;
     
     synchronized (queryQueue) {
       while ((q = queryQueue.poll()) != null) {
         out.println(q);
-        out.println("     " + q.headLine);
+        out.println("     LogLine: " + q.headLine);
+        out.println();
       }
     }
   }
