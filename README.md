@@ -2,13 +2,15 @@
 
 Early days. Crunches and summarizes Solr log files.  
 
-**java -jar slr.jar [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir}...**
+**java -jar slr.jar [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir} {-r '2015-05-12 14:23:00' '2015-05-12 15:11:56'}**
 
 Example: **java -jar slr.jar /solr/logs**  
 
-An optional TextMatchAspect will pull out any logs with matching text, for example: **java -jar slr.jar /solr/logs org.apache.solr.cloud** 
+An optional TextMatchAspect will pull out any logs with matching text and you can specify as many as you want, for example: **java -jar slr.jar /solr/logs org.apache.solr.cloud** 
 
-If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
+**-o** If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
+
+**-r** You can filter processed log entries by timestamp range using the format yyyy-MM-dd HH:mm:ss.
 
 If a folder is given, logs are parsed in reverse order if they end with digits.  
 **solr.log.2, solr.log.1, solr.log.0, etc**

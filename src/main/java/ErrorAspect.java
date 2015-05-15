@@ -37,65 +37,12 @@ public class ErrorAspect extends Aspect {
   private static final String CHARTS_FILE_NAME = "charts.html";
   
   private final AtomicInteger ooms = new AtomicInteger();
-  private final Set<LogError> errors = Collections.synchronizedSet(new HashSet<LogError>());
+  private final Set<LogEntry> errors = Collections.synchronizedSet(new HashSet<LogEntry>());
 
 
   private String outputDir;
   
   private boolean sawUnknownTimestamp = false;
-  
-  public static class LogError implements Comparable<LogError> {
-    List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
-    String entry;
-    Date timestamp;
-    String rawTimestamp;
-    
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((entry == null) ? 0 : entry.hashCode());
-      return result;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      LogError other = (LogError) obj;
-      if (entry == null) {
-        if (other.entry != null) return false;
-      } else if (!entry.equals(other.entry)) return false;
-      return true;
-    }
-
-    public LogError(String headLine, String entry) {
-      this.headLines.add(headLine);
-      this.entry = entry;
-    }
-    
-    @Override
-    public int compareTo(LogError o) {
-      if (this.timestamp == null) {
-        return -1;
-      } else if (o.timestamp == null) {
-        return 1;
-      }
-      
-      return this.timestamp.compareTo(o.timestamp);
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-      return "LogError [headLines=" + headLines + ", entry=" + entry + "]";
-    }
-  }
   
   public ErrorAspect(String outputDir) {
     this.outputDir = outputDir;
@@ -115,11 +62,11 @@ public class ErrorAspect extends Aspect {
       }
       // System.out.println("Exception:" + headLine);
       // System.out.println("Entry:" + entry);
-      LogError e;
+      LogEntry e;
       
       String ts = "";
       
-      e = new LogError(timestamp + " : " + filename, headLine + "\n" + entry);
+      e = new LogEntry(timestamp + " : " + filename, headLine + "\n" + entry);
       e.timestamp = dateTs;
       e.rawTimestamp = timestamp;
 
@@ -140,7 +87,7 @@ public class ErrorAspect extends Aspect {
     out.println("-----------------");
     int expCnt = 0;
     synchronized (errors) {
-      for (LogError e : errors) {
+      for (LogEntry e : errors) {
         expCnt += e.headLines.size();
       }
     }
@@ -148,13 +95,13 @@ public class ErrorAspect extends Aspect {
     out.println("Errors found:" + expCnt + " OOMS:" + ooms.get());
     out.println();
 
-    List<LogError> errorList = new ArrayList<LogError>(errors.size());
+    List<LogEntry> errorList = new ArrayList<LogEntry>(errors.size());
     synchronized (errors) {
       errorList.addAll(errors);
     }
     Collections.sort(errorList);
     
-    for (LogError error : errorList) {
+    for (LogEntry error : errorList) {
       for (String hl : error.headLines) {
         out.println("(" + hl + ") ");
       }
@@ -164,7 +111,7 @@ public class ErrorAspect extends Aspect {
     
     if (outputDir != null) {
       StringBuilder data = new StringBuilder();
-      for (LogError error : errorList) {
+      for (LogEntry error : errorList) {
 
 
         if (data.length() > 0) {
@@ -201,7 +148,7 @@ public class ErrorAspect extends Aspect {
   }
 
   public String getSummaryLine() {
-    List<LogError> errorList = new ArrayList<LogError>(errors.size());
+    List<LogEntry> errorList = new ArrayList<LogEntry>(errors.size());
     synchronized (errors) {
       errorList.addAll(errors);
     }
@@ -223,7 +170,7 @@ public class ErrorAspect extends Aspect {
   /**
    * @return the errors for tests
    */
-  public Set<LogError> getErrors() {
+  public Set<LogEntry> getErrors() {
     return errors;
   }
   

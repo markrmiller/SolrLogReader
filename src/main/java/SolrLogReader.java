@@ -116,8 +116,7 @@ public class SolrLogReader {
       if (args[i].equals("-o")) {
         outputDir = args[++i];
         out.println("# Writing file reports to:" + outputDir);
-      }
-      if (args[i].equals("-r")) {
+      } else if (args[i].equals("-r")) {
         String startDate = args[++i];
         String endDate = args[++i];
         
@@ -215,6 +214,7 @@ public class SolrLogReader {
         aspects.add(new CommitAspect());
         aspects.add(new QueryAspect(intanceOutputDir));
         aspects.add(new ErrorAspect(intanceOutputDir));
+        aspects.add(new OutputCoreLoggingAspect(intanceOutputDir));
         for (String aspect : textAspects) {
           aspects.add(new TextMatchAspect(aspect, intanceOutputDir));
         }

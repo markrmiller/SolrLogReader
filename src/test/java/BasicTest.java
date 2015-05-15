@@ -82,8 +82,8 @@ public class BasicTest extends Assert {
     assertEquals("Should be no OOMs", 0, errorAspect.getOoms().get());
     assertNull("outputdir not set", errorAspect.getOutputDir());
     
-    Set<ErrorAspect.LogError> errors = errorAspect.getErrors();
-    for (ErrorAspect.LogError error : errors) {
+    Set<LogEntry> errors = errorAspect.getErrors();
+    for (LogEntry error : errors) {
       assertTrue(error.headLines.get(0).contains("simple.log"));
       assertTrue("Could not find expected text on first line of exception",
           error.entry.contains("org.apache.solr.common.SolrException"));
