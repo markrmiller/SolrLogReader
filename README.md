@@ -21,7 +21,7 @@ Logs that look like they come from different servers will be summarized separate
 
 ### Getting Started
 
-Download SolrLogReader: https://github.com/markrmiller/SolrLogReader/releases/download/v0.0.1/solr-log-reader-0.0.1-SNAPSHOT-dist.zip
+Download SolrLogReader: https://github.com/markrmiller/SolrLogReader/releases/download/v0.0.2/solr-log-reader-0.0.2-SNAPSHOT-dist.zip
 
 Extract it.
 
