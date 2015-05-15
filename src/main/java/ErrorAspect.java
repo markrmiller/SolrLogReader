@@ -64,17 +64,12 @@ public class ErrorAspect extends Aspect {
       // System.out.println("Entry:" + entry);
       LogEntry e;
       
-      String ts = "";
-      
       e = new LogEntry(timestamp + " : " + filename, headLine + "\n" + entry);
       e.timestamp = dateTs;
       e.rawTimestamp = timestamp;
 
+      errors.add(e);
       
-      boolean added = errors.add(e);
-      if (!added) {
-        e.headLines.add(ts + " : " + filename);
-      }
       return true;
       
     }
@@ -85,14 +80,8 @@ public class ErrorAspect extends Aspect {
   public void printReport(PrintStream out) {
     out.println("Errors Report");
     out.println("-----------------");
-    int expCnt = 0;
-    synchronized (errors) {
-      for (LogEntry e : errors) {
-        expCnt += e.headLines.size();
-      }
-    }
     
-    out.println("Errors found:" + expCnt + " OOMS:" + ooms.get());
+    out.println("Errors found:" + errors.size() + " OOMS:" + ooms.get());
     out.println();
 
     List<LogEntry> errorList = new ArrayList<LogEntry>(errors.size());
@@ -102,9 +91,7 @@ public class ErrorAspect extends Aspect {
     Collections.sort(errorList);
     
     for (LogEntry error : errorList) {
-      for (String hl : error.headLines) {
-        out.println("(" + hl + ") ");
-      }
+      out.println("(" + error.headLine + ") ");
       out.println(error.entry);
       out.println();
     }
@@ -119,9 +106,9 @@ public class ErrorAspect extends Aspect {
         }
 
         StringBuilder entry = new StringBuilder();
-        for (String hl : error.headLines) {
-          entry.append("(" + hl + ") ");
-        }
+        
+        entry.append("(" + error.headLine + ") ");
+        
         entry.append(error.entry);
 
         String tooltip = "\"<div style='font-size:14px;padding:5px 5px 5px 5px'><b>Date=</b>"

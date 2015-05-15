@@ -16,13 +16,10 @@
  * limitations under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 public class LogEntry implements Comparable<LogEntry> {
-  List<String> headLines = Collections.synchronizedList(new ArrayList<String>());
+  String headLine;
   String entry;
   Date timestamp;
   String rawTimestamp;
@@ -48,7 +45,7 @@ public class LogEntry implements Comparable<LogEntry> {
   }
 
   public LogEntry(String headLine, String entry) {
-    this.headLines.add(headLine);
+    this.headLine = headLine;
     this.entry = entry;
   }
   
@@ -70,6 +67,6 @@ public class LogEntry implements Comparable<LogEntry> {
    */
   @Override
   public String toString() {
-    return "LogError [headLines=" + headLines + ", entry=" + entry + "]";
+    return "LogError [headLine=" + headLine + ", entry=" + entry + "]";
   }
 }

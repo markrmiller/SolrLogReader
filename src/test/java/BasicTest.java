@@ -84,7 +84,7 @@ public class BasicTest extends Assert {
     
     Set<LogEntry> errors = errorAspect.getErrors();
     for (LogEntry error : errors) {
-      assertTrue(error.headLines.get(0).contains("simple.log"));
+      assertTrue(error.headLine.contains("simple.log"));
       assertTrue("Could not find expected text on first line of exception",
           error.entry.contains("org.apache.solr.common.SolrException"));
       assertTrue("Could not find expected text on last line of exception",

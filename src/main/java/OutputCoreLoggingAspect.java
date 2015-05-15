@@ -79,7 +79,7 @@ public class OutputCoreLoggingAspect extends Aspect {
       while (it.hasNext()) {
         LogEntry t = it.next();
         it.remove();
-        fullOutput.write(t.headLines.get(0));
+        fullOutput.write(t.headLine);
         fullOutput.write(t.entry);
       }
     }
