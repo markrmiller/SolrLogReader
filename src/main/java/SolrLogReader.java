@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * A fast Solr log reader.
  */
 public class SolrLogReader {
-  private static final String REPORT_FILENAME = "report.txt";
+  private static final String REPORT_FILENAME = "logs-report.txt";
   public static Pattern END_DIGITS = Pattern.compile("(.*?)(\\d+)$", Pattern.DOTALL);
   public static Pattern END_DIGITS2 = Pattern.compile("(.*?)(\\.\\d+)$", Pattern.DOTALL);
   public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
