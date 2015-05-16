@@ -22,15 +22,16 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class TextMatchAspect extends Aspect {
-  private final List<Text> texts = Collections.synchronizedList(new ArrayList<Text>());
+  private SortedSet<Text> texts = Collections.synchronizedSortedSet(new TreeSet<Text>());
   private final String text;
   private String outputDir;
+  private String filename;
   
   static class Text implements Comparable<Text> {
     String text;
@@ -54,6 +55,21 @@ public class TextMatchAspect extends Aspect {
   public TextMatchAspect(String text, String outputDir) {
     this.text = text;
     this.outputDir = outputDir;
+    
+    if (this.outputDir != null) {
+      filename = text.replaceAll("[^a-zA-Z0-9.-]", "_") + ".txt";
+      StringBuilder sb = new StringBuilder();
+      sb.append("TextMatch Report: " + text + "\n");
+      sb.append("-----------------\n\n");
+      
+      try {
+        Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.CREATE);
+      } catch (UnsupportedEncodingException e) {
+        // UTF-8
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
   
   @Override
@@ -73,43 +89,16 @@ public class TextMatchAspect extends Aspect {
   }
   
   @Override
-  public void printReport(PrintStream out) {
-    synchronized (texts) {
-      
-      Collections.sort(texts);
-      
-      out.println("TextMatch Report: " + text);
-      out.println("-----------------");
-      for (Text t : texts) {
-        out.println("(" + t.timestamp + " : " + t.filename + ")");
-        out.println("  " + t.text + "\n");
-      }
+  public void newFile() {
+    if (outputDir != null) {
+      flushSS();
     }
   }
   
-  @Override
-  public void close() {
-    if (outputDir != null) {
-      fileReport(outputDir);
-    }
-  }
-
-  public void fileReport(String outputDir) {
-    String filename = text.replaceAll("[^a-zA-Z0-9.-]", "_") + ".txt";
-    StringBuilder sb = new StringBuilder();
-    sb.append("TextMatch Report: " + text + "\n");
-    sb.append("-----------------");
-    
-    try {
-      Files.write(Paths.get(outputDir, filename), sb.toString().getBytes("UTF-8"), StandardOpenOption.CREATE);
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  private void flushSS() {
     synchronized (texts) {
+      StringBuilder sb = new StringBuilder();
       for (Text t : texts) {
-        sb = new StringBuilder();
         sb.append("(" + t.timestamp + " : " + t.filename + ")\n");
         sb.append("  " + t.text + "\n\n");
         
@@ -120,7 +109,21 @@ public class TextMatchAspect extends Aspect {
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
+        sb.setLength(0);
       }
+      texts.clear();
+    }
+  }
+  
+  @Override
+  public void printReport(PrintStream out) {
+  
+  }
+  
+  @Override
+  public void close() {
+    if (outputDir != null) {
+      flushSS();
     }
   }
   

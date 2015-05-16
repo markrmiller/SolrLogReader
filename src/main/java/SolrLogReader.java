@@ -148,6 +148,12 @@ public class SolrLogReader {
       }
     }
     
+    if (textAspects.size() > 0 && outputDir == null) {
+      System.out.println();
+      System.out.println("TextAspects only work with the -o output directory option.");
+      System.exit(1);
+    }
+    
     long timeStart = new Date().getTime();
     List<File> files = new ArrayList<File>();
     File file = new File(args[0]);

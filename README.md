@@ -6,7 +6,8 @@ Early days. Crunches and summarizes Solr log files.
 
 Example: **java -jar slr.jar /solr/logs**  
 
-An optional TextMatchAspect will pull out any logs with matching text and you can specify as many as you want, for example: **java -jar slr.jar /solr/logs org.apache.solr.cloud** 
+An optional TextMatchAspect will pull out any logs with matching text and you can specify as many as you want, for example: **java -jar slr.jar /solr/logs org.apache.solr.cloud -o /results** 
+**Note:** TextMatchAspect will only work when using -o to specify an output directory.
 
 **-o** If you specify an outputdir, more verbose summaries are dumped to files in that folder as well as an html error chart.  
 
