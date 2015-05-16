@@ -82,6 +82,7 @@ public class OutputCoreLoggingAspect extends Aspect {
         fullOutput.write(t.headLine);
         fullOutput.write(t.entry);
       }
+      ss.clear();
     }
   }
   
@@ -92,8 +93,9 @@ public class OutputCoreLoggingAspect extends Aspect {
   
   @Override
   public void newFile() {
-    flushSS();
-    ss.clear();
+    if (fullOutput != null) {
+      flushSS();
+    }
   }
   
   @Override
