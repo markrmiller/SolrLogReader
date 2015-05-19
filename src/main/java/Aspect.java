@@ -43,8 +43,8 @@ public abstract class Aspect {
   public void close() {}
   
   /**
-   * Notification processing has moved to a new file.
+   * Notification processing is done with a file.
    */
-  public void newFile() {}
+  public void endOfFile() {}
   
 }

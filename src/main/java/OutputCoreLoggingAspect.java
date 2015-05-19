@@ -32,8 +32,7 @@ import java.util.regex.Pattern;
 
 public class OutputCoreLoggingAspect extends Aspect {
   
-  public static Pattern CORE_LOGGING = Pattern
-.compile("\\spath=\\S+\\s", Pattern.DOTALL);
+  public static Pattern CORE_LOGGING = Pattern.compile("\\spath=\\S+\\s", Pattern.DOTALL);
       
   private PrintWriter fullOutput;
   
@@ -64,10 +63,7 @@ public class OutputCoreLoggingAspect extends Aspect {
         e.rawTimestamp = timestamp;
         
         // TODO: something more RAM efficient ??
-        synchronized (ss) {
-          ss.add(e);
-        }
-        
+        ss.add(e);
       }
     }
     return false;
@@ -78,9 +74,9 @@ public class OutputCoreLoggingAspect extends Aspect {
       Iterator<LogEntry> it = ss.iterator();
       while (it.hasNext()) {
         LogEntry t = it.next();
-        it.remove();
         fullOutput.write(t.headLine);
         fullOutput.write(t.entry);
+        it.remove();
       }
       ss.clear();
     }
@@ -92,7 +88,7 @@ public class OutputCoreLoggingAspect extends Aspect {
   }
   
   @Override
-  public void newFile() {
+  public void endOfFile() {
     if (fullOutput != null) {
       flushSS();
     }
@@ -101,7 +97,6 @@ public class OutputCoreLoggingAspect extends Aspect {
   @Override
   public void close() {
     if (fullOutput != null) {
-      flushSS();
       fullOutput.close();
     }
   }

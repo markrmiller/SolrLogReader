@@ -311,10 +311,6 @@ public class SolrLogReader {
       throws IOException {
     out.println("Processing file: " + file.getName());
     
-    for (Aspect aspect : aspects) {
-      aspect.newFile();
-    }
-    
     int threads = Runtime.getRuntime().availableProcessors();
     RandomAccessFile raf = new RandomAccessFile(file, "r");
     long length = raf.length();
@@ -342,6 +338,10 @@ public class SolrLogReader {
         Thread.interrupted();
         e.printStackTrace();
       }
+    }
+    
+    for (Aspect aspect : aspects) {
+      aspect.endOfFile();
     }
   }
   

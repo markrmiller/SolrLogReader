@@ -89,7 +89,7 @@ public class TextMatchAspect extends Aspect {
   }
   
   @Override
-  public void newFile() {
+  public void endOfFile() {
     if (outputDir != null) {
       flushSS();
     }
@@ -122,9 +122,7 @@ public class TextMatchAspect extends Aspect {
   
   @Override
   public void close() {
-    if (outputDir != null) {
-      flushSS();
-    }
+  
   }
   
 }
