@@ -18,10 +18,10 @@
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.file.FileAlreadyExistsException;
@@ -75,7 +75,7 @@ public class SolrLogReader {
   public static Map<String,LogInstance> summarize(String[] args) throws FileNotFoundException, IOException {
     PrintStream out = System.out;
     Properties props = new Properties();
-    FileInputStream fis = new FileInputStream(new File("config.txt"));
+    InputStream fis = ClassLoader.getSystemResourceAsStream("config.txt");
     try {
       props.load(fis);
     } finally {
