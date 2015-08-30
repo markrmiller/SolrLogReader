@@ -19,25 +19,37 @@
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ErrorAspect extends Aspect {
   private static final String CHARTS_FILE_NAME = "error-chart.html";
   
+  public static Pattern EXCEPTION_CLASS = Pattern.compile("\\s((?:[a-zA-Z_$][a-zA-Z\\d_$]*\\.)+[a-zA-Z_$][a-zA-Z\\d_$]*)");
+  
   private final AtomicInteger ooms = new AtomicInteger();
   private final Set<LogEntry> errors = Collections.synchronizedSet(new HashSet<LogEntry>());
+  
+  private final Map<String,Integer> uniqueExceptions = new HashMap<String,Integer>();
 
 
   private String outputDir;
@@ -70,10 +82,36 @@ public class ErrorAspect extends Aspect {
 
       errors.add(e);
       
+      // unique errors
+      if (outputDir != null) {
+        Matcher m = EXCEPTION_CLASS.matcher(headLine);
+        while (m.find()) {
+          collect(m);
+        }
+        m = EXCEPTION_CLASS.matcher(entry);
+        while (m.find()) {
+          collect(m);
+        }
+      }
+      
       return false;
       
     }
     return false;
+  }
+
+  private void collect(Matcher m) {
+    String match = m.group(1);
+    if (match.contains("Exception")) {
+      synchronized (uniqueExceptions) {
+        Integer count = uniqueExceptions.get(match);
+        if (count == null) {
+          uniqueExceptions.put(match, 1);
+        } else {
+          uniqueExceptions.put(match, ++count);
+        }
+      }
+    }
   }
   
   @Override
@@ -98,11 +136,31 @@ public class ErrorAspect extends Aspect {
     
     if (outputDir != null) {
       writeHtmlErrorChart(errorList);
+      writeUniqueExceptionReport();
     }
   }
 
+  private void writeUniqueExceptionReport() {
+    
+    try {
+      PrintWriter output = new PrintWriter(
+          new BufferedWriter(new FileWriter(outputDir + File.separator + "unique-error-report.txt"), 2 ^ 20));
+      synchronized (uniqueExceptions) {
+        Set<Entry<String,Integer>> entries = uniqueExceptions.entrySet();
+        for (Entry<String,Integer> error : entries) {
+          output.println(error.getKey() + " " + error.getValue());
+        }
+      }
+      output.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
   private void writeHtmlErrorChart(List<LogEntry> errorList) {
-    StringBuilder data = new StringBuilder();
+    StringBuilder data = new StringBuilder()
+    
+    ;
     for (LogEntry error : errorList) {
 
 
@@ -132,7 +190,9 @@ public class ErrorAspect extends Aspect {
       html = html.replaceAll("ABOUT_REPLACE", "Error Count:" + errorList.size());
       html = html.replaceAll("DESC_REPLACE", "Charts");
       html = html.replaceAll("HEIGHT_REPLACE", "150");
-      Files.write(Paths.get(outputDir +"/" + CHARTS_FILE_NAME), html.getBytes("UTF-8"));
+      Files.write(Paths.get(outputDir + "/" +
+      
+      CHARTS_FILE_NAME), html.getBytes("UTF-8"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -155,6 +215,7 @@ public class ErrorAspect extends Aspect {
    * @return the ooms for tests
    */
   public AtomicInteger getOoms() {
+    
     return ooms;
   }
   
