@@ -15,6 +15,7 @@ An optional TextMatchAspect will pull out any logs with matching text and you ca
 
 #### Optional Params
 **-nSlowQueries** No. of Slow Queries to output, default value is 10.
+
 **-nSlowLoadTimes** No. of Slow Load Times to output, default value is 5.
 
 If a folder is given, logs are parsed in reverse order if they end with digits.  
