@@ -33,7 +33,7 @@ import com.google.common.collect.MinMaxPriorityQueue;
 
 // TODO: not finished
 public class OpenSearcherAspect extends Aspect {
-  private static final int NUM_SLOWEST_LOAD_TIMES = 5;
+  private static int NUM_SLOWEST_LOAD_TIMES = 5;
   public static Pattern INIT_SEARCHER = Pattern.compile(".*?SolrIndexSearcher <init>.*");
   public static Pattern OPEN_SEARCHER_ID = Pattern.compile(".*?Opening Searcher@(\\S+?)(?:\\[.*?\\])? (realtime|main).*?");
   public static Pattern REGISTER_SEARCHER_ID = Pattern.compile(".*?Registered new searcher Searcher@(\\S+?)(?:\\[.*?\\])? .*?");
@@ -47,7 +47,8 @@ public class OpenSearcherAspect extends Aspect {
   
   private MinMaxPriorityQueue<Long> loadTimes;
   
-  public OpenSearcherAspect() {
+  public OpenSearcherAspect(int nSlowLoadTimes) {
+    NUM_SLOWEST_LOAD_TIMES = nSlowLoadTimes;
     loadTimes = MinMaxPriorityQueue.orderedBy(new Comparator<Long>() {
 
       @Override

@@ -13,6 +13,10 @@ An optional TextMatchAspect will pull out any logs with matching text and you ca
 
 **-r** You can filter processed log entries by timestamp range using the format yyyy-MM-dd HH:mm:ss.
 
+#### Optional Params
+**-nSlowQueries** No. of Slow Queries to output, default value is 10.
+**-nSlowLoadTimes** No. of Slow Load Times to output, default value is 5.
+
 If a folder is given, logs are parsed in reverse order if they end with digits.  
 **solr.log.2, solr.log.1, solr.log.0, etc**
 

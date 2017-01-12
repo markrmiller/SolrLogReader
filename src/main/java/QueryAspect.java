@@ -31,12 +31,12 @@ import java.util.regex.Pattern;
 import com.google.common.collect.MinMaxPriorityQueue;
 
 public class QueryAspect extends Aspect {
-  private static final int NUM_SLOWEST_QUERIES = 10;
+  private static int NUM_SLOWEST_QUERIES = 10;//default value
 
   public static Pattern QUERY = Pattern.compile(
       "^.*?[\\&\\{]q\\=(.*?)(?:&|}).*?hits\\=(\\d+).*?QTime\\=(\\d+).*$", Pattern.DOTALL);
   
-  private final MinMaxPriorityQueue<Query> queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
+  private MinMaxPriorityQueue<Query> queryQueue;
   
   private final AtomicInteger queryCount = new AtomicInteger();
   
@@ -65,12 +65,22 @@ public class QueryAspect extends Aspect {
     }
     
   }
-  
+
+  public QueryAspect(String outputDir, int numSlowQueries) {
+    NUM_SLOWEST_QUERIES = numSlowQueries;
+    prepare(outputDir);
+  }
+
   public QueryAspect(String outputDir) {
+    prepare(outputDir);
+  }
+
+  private void prepare(String outputDir) {
+    queryQueue = MinMaxPriorityQueue.maximumSize(NUM_SLOWEST_QUERIES).create();
     if (outputDir != null) {
       try {
         fullOutput = new PrintWriter(
-            new BufferedWriter(new FileWriter(outputDir + File.separator + "query-report.txt"), 2 ^ 20));
+                new BufferedWriter(new FileWriter(outputDir + File.separator + "query-report.txt"), 2 ^ 20));
         StringBuilder sb = new StringBuilder();
         sb.append("Query Report" + "\n");
         sb.append("-----------------" + "\n\n");
