@@ -19,6 +19,10 @@ If a folder is given, logs are parsed in reverse order if they end with digits.
 Logs that look like they come from different servers will be summarized separately.  
 **solr-host1.log.1, solr-host1.log.0, solr-host2.log.0, etc**
 
+#### Optional Params
+**-nSlowQueries** No. of Slow Queries to output, default value is 10.
+
+**-nSlowLoadTimes** No. of Slow Load Times to output, default value is 5.
 
 ### Getting Started
 

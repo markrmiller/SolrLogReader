@@ -55,6 +55,8 @@ public class SolrLogReader {
   public static Pattern DIGITS = Pattern.compile("(\\d+)", Pattern.DOTALL);
   private static String outputDir;
   private static Range range;
+  private static int nSlowQueries = 10;
+  private static int nSlowLoadTimes = 5;
 
   public static class Range {
     Date start;
@@ -142,6 +144,16 @@ public class SolrLogReader {
         }
         
         out.println("# Range:" + startDate + ", " + endDate);
+      } else if (args[i].equals("-nSlowQueries")) {
+        String count = args[++i];
+        if(count != null && !count.isEmpty()) {
+          nSlowQueries = Integer.parseInt(count);
+        }
+      } else if (args[i].equals("-nSlowLoadTimes")) {
+        String count = args[++i];
+        if(count != null && !count.isEmpty()) {
+          nSlowLoadTimes = Integer.parseInt(count);
+        }
       } else {
         out.println("# Using Text Aspect: " + args[i]);
         textAspects.add(args[i]);
@@ -216,9 +228,9 @@ public class SolrLogReader {
         }
         
         List<Aspect> aspects = new ArrayList<Aspect>();
-        aspects.add(new OpenSearcherAspect());
+        aspects.add(new OpenSearcherAspect(nSlowLoadTimes));
         aspects.add(new CommitAspect());
-        aspects.add(new QueryAspect(intanceOutputDir));
+        aspects.add(new QueryAspect(intanceOutputDir, nSlowQueries));
         aspects.add(new ErrorAspect(intanceOutputDir));
         aspects.add(new OutputCoreLoggingAspect(intanceOutputDir));
         for (String aspect : textAspects) {
