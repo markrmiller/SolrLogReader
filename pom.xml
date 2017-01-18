@@ -30,6 +30,10 @@
   </dependency>
  </dependencies>
 
+ <properties>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+ </properties>
+
  <build>
   <plugins>
 
@@ -126,26 +130,6 @@
        <overWriteReleases>false</overWriteReleases>
        <overWriteSnapshots>false</overWriteSnapshots>
        <overWriteIfNewer>true</overWriteIfNewer>
-      </configuration>
-     </execution>
-    </executions>
-   </plugin>
-
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-antrun-plugin</artifactId>
-    <version>1.1</version>
-    <executions>
-     <execution>
-      <phase>prepare-package</phase>
-      <goals>
-       <goal>run</goal>
-      </goals>
-      <configuration>
-       <tasks>
-        <copy file="config.txt" tofile="${project.build.directory}/config.txt" />
-        <copy file="chart_template.html" tofile="${project.build.directory}/chart_template.html" />
-       </tasks>
       </configuration>
      </execution>
     </executions>
