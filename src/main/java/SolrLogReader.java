@@ -303,13 +303,15 @@ public class SolrLogReader {
   private static void getFiles(List<File> files, File file, String matchText) {
     if (file.isDirectory()) {
       File[] listFiles = file.listFiles();
-      for (File f : listFiles) {
-        if (f.isFile()) {
-          if (matchText == null || f.getName().matches(matchText)) {
-            files.add(f);
+      if(listFiles != null) {
+        for (File f : listFiles) {
+          if (f.isFile()) {
+            if (matchText == null || f.getName().matches(matchText)) {
+              files.add(f);
+            }
+          } else {
+            getFiles(files, f, matchText);
           }
-        } else {
-          getFiles(files, f, matchText);
         }
       }
     } else {
