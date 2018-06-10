@@ -135,7 +135,11 @@ public class ErrorAspect extends Aspect {
     }
     
     if (outputDir != null) {
-      writeHtmlErrorChart(errorList);
+      try {
+        writeHtmlErrorChart(errorList);
+      } catch (OutOfMemoryError e) {
+        System.err.println("Not enough RAM given to heap to write html error chart - must be a lot of errors.");
+      }
       writeUniqueExceptionReport();
     }
   }
