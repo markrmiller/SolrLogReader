@@ -14,6 +14,15 @@ timestamp1-dateformat=yyyy-MM-dd HH:mm:ss,SSS
 timestamp2=^\\S+[\\s-]+(\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d);(.*)$
 timestamp2-dateformat=yyyy-MM-dd HH:mm:ss.SSS
 
+# The Solr 7x default
+# 2018-05-31 03:42:53.242 INFO  (TEST-ChaosMonkeySafeLeaderTest.test-seed#[1068B7C5935267C]) [   ] o.e.j.s.session node0 Stopped scavenging
+timestamp3=^(\\d\\d\\d\\d-\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d)(.*)$
+timestamp3-dateformat=yyyy-MM-dd HH:mm:ss.SSS
+
 # If we enable this permissive (timestamp is just digits) pattern, you can get false positives on the above patterns
 # 870  [main] INFO  org.apache.solr.core.SolrResourceLoader 
-# timestamp3=^([\\d-]+)\\s(.*)
+timestamp4=^(\\d+)\\s(.*)$
+timestamp4-dateformat=seconds
+
+
+# ^(\d\d\d\d\-\d\d\-\d\d\s\d\d:\d\d:\d\d,\d\d\d)(.*)$
