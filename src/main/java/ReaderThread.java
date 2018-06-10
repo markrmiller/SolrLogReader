@@ -133,11 +133,16 @@ public class ReaderThread extends Thread {
             // System.out.println("Check df:" + dfString + " for " +
             // patternIndex + " in " + Arrays.asList(dfPatterns));
             if (dfString != null) {
-              SimpleDateFormat format = new SimpleDateFormat(dfString);
-              try {
-                dateTs = format.parse(timestamp);
-              } catch (ParseException e) {
-                e.printStackTrace();
+              if (dfString.equals("seconds")) {
+                dateTs = new Date(Integer.parseInt(timestamp));
+              } else {
+                
+                SimpleDateFormat format = new SimpleDateFormat(dfString);
+                try {
+                  dateTs = format.parse(timestamp);
+                } catch (ParseException e) {
+                  e.printStackTrace();
+                }
               }
             }
             if (headline != null) {
