@@ -1,6 +1,6 @@
 ## A high performance Solr log reader / parser.
 
-Early days. Crunches and summarizes Solr log files.  
+Crunches and summarizes Solr log files. 
 
 **java -jar slr.jar [file or folder path] {TextMatchAspect} {TextMatchAspect} {-o outputdir} {-r '2015-05-12 14:23:00' '2015-05-12 15:11:56'}**
 
@@ -26,7 +26,7 @@ Logs that look like they come from different servers will be summarized separate
 
 ### Getting Started
 
-Download SolrLogReader: https://github.com/markrmiller/SolrLogReader/releases/download/v0.0.2/solr-log-reader-0.0.2-SNAPSHOT-dist.zip
+Download SolrLogReader: https://github.com/markrmiller/SolrLogReader/releases/download/v1.0.0/solr-log-reader-1.0.0-dist.zip
 
 Extract it.
 
@@ -34,6 +34,9 @@ Run it.
 
 **java -jar slr.jar /path/to/logs**
 
+Often you want all the extra output and separation you can get by using the -o output folder option.
+
+**java -jar slr.jar /path/to/logs /path/to/output**
 
 ### Timestamp Patterns
 
