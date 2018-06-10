@@ -171,7 +171,7 @@ public class SolrLogReader {
     File file = new File(args[0]);
     String matchText = null;
     File srcDir;
-    if (file.getName().contains("*") || file.isFile()) {
+    if (file.getName().contains("*")) {
       // file matching
       matchText = file.getName().replaceAll("\\*", ".*");
       srcDir = file.getParentFile();
